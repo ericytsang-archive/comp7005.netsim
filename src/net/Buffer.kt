@@ -5,6 +5,6 @@ package net;
  */
 public interface Buffer<Element>
 {
-    void put(Element element);
-    Element get() throws InterruptedException;
+    fun put(element:Element):Unit;
+    fun get():Element;
 }
