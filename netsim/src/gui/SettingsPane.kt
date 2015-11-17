@@ -9,9 +9,49 @@ import javafx.scene.layout.Priority
 
 class SettingsPane:GridPane()
 {
+    private val COL_INDEX_LABEL = 0
+    private val COL_INDEX_TEXTFIELD = 1
+    private val COL_INDEX_SLIDER = 2
+
+    private val SERVER_PORT_LABEL = "Server Port:"
+    private val SERVER_PORT_MAX = 65535.0
+    private val SERVER_PORT_MIN = 1.0
+    private val SERVER_PORT_DEFAULT = 7005.0
+
+    private val NETWORK_CAPACITY_LABEL = "Capacity:"
+    private val NETWORK_CAPACITY_MAX = 10000.0
+    private val NETWORK_CAPACITY_MIN = 0.0
+    private val NETWORK_CAPACITY_DEFAULT = 3000.0
+
+    private val PACKET_DROP_FUN_LABEL = "Packet Drop Function:"
+    private val PACKET_DROP_FUN_MAX = 6.0
+    private val PACKET_DROP_FUN_MIN = 0.0
+    private val PACKET_DROP_FUN_DEFAULT = 4.0
+
+    private val NOISE_LABEL = "Noise:"
+    private val NOISE_MAX = 1.0
+    private val NOISE_MIN = 0.0
+    private val NOISE_DEFAULT = 0.01
+
+    private val LATENCY_LABEL = "Latency:"
+    private val LATENCY_MAX = 5000.0
+    private val LATENCY_MIN = 0.0
+    private val LATENCY_DEFAULT = 250.0
+
+    private val JITTER_LABEL = "Jitter:"
+    private val JITTER_MAX = 5000.0
+    private val JITTER_MIN = 0.0
+    private val JITTER_DEFAULT = 250.0
+
     private var nextRow:Int = 0
 
     init
+    {
+        configureLayout()
+        addChildNodes()
+    }
+
+    private fun configureLayout()
     {
         // configure aesthetic properties
         padding = Insets(Dimens.KEYLINE_SMALL.toDouble())
@@ -30,7 +70,10 @@ class SettingsPane:GridPane()
         column3.isFillWidth = true
         column3.hgrow = Priority.ALWAYS
         columnConstraints.add(2,column3)
+    }
 
+    private fun addChildNodes()
+    {
         // serverPortControl
         val serverPortControl = SliderSetting(false)
         serverPortControl.label.text = SERVER_PORT_LABEL
@@ -93,42 +136,5 @@ class SettingsPane:GridPane()
         add(newSliderSetting.label,COL_INDEX_LABEL,nextRow)
         add(newSliderSetting.numberTextField,COL_INDEX_TEXTFIELD,nextRow)
         nextRow++
-    }
-
-    companion object
-    {
-        private val COL_INDEX_LABEL = 0
-        private val COL_INDEX_TEXTFIELD = 1
-        private val COL_INDEX_SLIDER = 2
-
-        private val SERVER_PORT_LABEL = "Server Port:"
-        private val SERVER_PORT_MAX = 65535.0
-        private val SERVER_PORT_MIN = 1.0
-        private val SERVER_PORT_DEFAULT = 7005.0
-
-        private val NETWORK_CAPACITY_LABEL = "Capacity:"
-        private val NETWORK_CAPACITY_MAX = 10000.0
-        private val NETWORK_CAPACITY_MIN = 0.0
-        private val NETWORK_CAPACITY_DEFAULT = 3000.0
-
-        private val PACKET_DROP_FUN_LABEL = "Packet Drop Function:"
-        private val PACKET_DROP_FUN_MAX = 6.0
-        private val PACKET_DROP_FUN_MIN = 0.0
-        private val PACKET_DROP_FUN_DEFAULT = 4.0
-
-        private val NOISE_LABEL = "Noise:"
-        private val NOISE_MAX = 1.0
-        private val NOISE_MIN = 0.0
-        private val NOISE_DEFAULT = 0.01
-
-        private val LATENCY_LABEL = "Latency:"
-        private val LATENCY_MAX = 5000.0
-        private val LATENCY_MIN = 0.0
-        private val LATENCY_DEFAULT = 250.0
-
-        private val JITTER_LABEL = "Jitter:"
-        private val JITTER_MAX = 5000.0
-        private val JITTER_MIN = 0.0
-        private val JITTER_DEFAULT = 250.0
     }
 }
