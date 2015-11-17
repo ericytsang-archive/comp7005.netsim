@@ -1,28 +1,29 @@
 package gui
 
 import gui.components.ProgressDisplay
-import gui.components.SliderSetting
 import gui.components.TextDisplay
 import javafx.geometry.HPos
 import javafx.geometry.Insets
-import javafx.scene.control.Label
-import javafx.scene.layout.Border
-import javafx.scene.layout.BorderStroke
-import javafx.scene.layout.BorderStrokeStyle
-import javafx.scene.layout.BorderWidths
 import javafx.scene.layout.ColumnConstraints
-import javafx.scene.layout.CornerRadii
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
-import javafx.scene.layout.VBox
-import javafx.scene.paint.Paint
 
 class StatisticsPane:GridPane()
 {
-    private val COL_INDEX_LABEL = 0
-    private val COL_INDEX_CONTENT = 1
+    private val COL_INDEX_LABEL:Int = 0
+    private val COL_INDEX_CONTENT:Int = 1
 
-    private val PACKETS_DELIVERED_LABEL = "Packets Delivered:"
+    private val PACKETS_DELIVERED_LABEL:String = "Packets Delivered:"
+    private val PACKETS_DELIVERED_DEFAULT:Double = 0.0
+
+    private val PACKETS_DROPPED_LABEL:String = "Packets Dropped:"
+    private val PACKETS_DROPPED_DEFAULT:Double = 0.0
+
+    private val THROUGHPUT_LABEL:String = "Throughput:"
+    private val THROUGHPUT_DEFAULT:Double = 0.20
+
+    private val BYTES_IN_FLIGHT_LABEL:String = "Bytes In Flight:"
+    private val BYTES_IN_FLIGHT_DEFAULT:Double = 0.50
 
     private var nextRow:Int = 0
 
@@ -54,13 +55,19 @@ class StatisticsPane:GridPane()
     {
         val packetsDeliveredDisplay = TextDisplay()
         packetsDeliveredDisplay.label.text = PACKETS_DELIVERED_LABEL
-        packetsDeliveredDisplay.value.text = "0"
+        packetsDeliveredDisplay.value.text = PACKETS_DELIVERED_DEFAULT.toString()
 
         val packetsDroppedDisplay = TextDisplay()
+        packetsDroppedDisplay.label.text = PACKETS_DROPPED_LABEL
+        packetsDroppedDisplay.value.text = PACKETS_DROPPED_DEFAULT.toString()
 
         val bytesInFlightDisplay = ProgressDisplay()
+        bytesInFlightDisplay.label.text = BYTES_IN_FLIGHT_LABEL
+        bytesInFlightDisplay.progressBar.progressProperty().value = BYTES_IN_FLIGHT_DEFAULT
 
         val throughputDisplay = ProgressDisplay()
+        throughputDisplay.label.text = THROUGHPUT_LABEL
+        throughputDisplay.progressBar.progressProperty().value = THROUGHPUT_DEFAULT
 
         addTextDisplay(packetsDeliveredDisplay)
         addTextDisplay(packetsDroppedDisplay)

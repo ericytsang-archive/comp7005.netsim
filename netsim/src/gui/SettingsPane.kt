@@ -80,7 +80,6 @@ class SettingsPane:GridPane()
         serverPortControl.slider.max = SERVER_PORT_MAX
         serverPortControl.slider.min = SERVER_PORT_MIN
         serverPortControl.slider.value = SERVER_PORT_DEFAULT
-        addNumberTextFieldSetting(serverPortControl)
 
         // packetDropFunctionControl
         val networkCapacityControl = SliderSetting(false)
@@ -88,7 +87,6 @@ class SettingsPane:GridPane()
         networkCapacityControl.slider.max = NETWORK_CAPACITY_MAX
         networkCapacityControl.slider.min = NETWORK_CAPACITY_MIN
         networkCapacityControl.slider.value = NETWORK_CAPACITY_DEFAULT
-        addSliderSetting(networkCapacityControl)
 
         // packetDropFunctionControl
         val packetDropFunctionControl = SliderSetting(true)
@@ -96,7 +94,6 @@ class SettingsPane:GridPane()
         packetDropFunctionControl.slider.max = PACKET_DROP_FUN_MAX
         packetDropFunctionControl.slider.min = PACKET_DROP_FUN_MIN
         packetDropFunctionControl.slider.value = PACKET_DROP_FUN_DEFAULT
-        addSliderSetting(packetDropFunctionControl)
 
         // noiseControl
         val noiseControl = SliderSetting(true)
@@ -104,7 +101,6 @@ class SettingsPane:GridPane()
         noiseControl.slider.max = NOISE_MAX
         noiseControl.slider.min = NOISE_MIN
         noiseControl.slider.value = NOISE_DEFAULT
-        addSliderSetting(noiseControl)
 
         // latencyControl
         val latencyControl = SliderSetting(false)
@@ -112,7 +108,6 @@ class SettingsPane:GridPane()
         latencyControl.slider.max = LATENCY_MAX
         latencyControl.slider.min = LATENCY_MIN
         latencyControl.slider.value = LATENCY_DEFAULT
-        addSliderSetting(latencyControl)
 
         // jitterControl
         val jitterControl = SliderSetting(false)
@@ -120,6 +115,13 @@ class SettingsPane:GridPane()
         jitterControl.slider.max = JITTER_MAX
         jitterControl.slider.min = JITTER_MIN
         jitterControl.slider.value = JITTER_DEFAULT
+
+        // add nodes to layout
+        addNumberTextFieldSetting(serverPortControl)
+        addSliderSetting(networkCapacityControl)
+        addSliderSetting(packetDropFunctionControl)
+        addSliderSetting(noiseControl)
+        addSliderSetting(latencyControl)
         addSliderSetting(jitterControl)
     }
 
