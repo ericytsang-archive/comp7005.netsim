@@ -17,7 +17,7 @@ import javafx.stage.Stage
 class Window:Application()
 {
     private val WINDOW_TITLE = "Window Title"
-    private val WINDOW_WIDTH = 640
+    private val WINDOW_WIDTH = 700
     private val WINDOW_HEIGHT = 480
 
     override fun start(primaryStage:Stage)

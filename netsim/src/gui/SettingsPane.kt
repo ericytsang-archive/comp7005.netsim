@@ -1,11 +1,15 @@
 package gui
 
-import gui.components.SliderSetting
+import gui.components.NumberTextField
+import javafx.beans.property.DoubleProperty
 import javafx.geometry.HPos
 import javafx.geometry.Insets
+import javafx.scene.control.Label
+import javafx.scene.control.Slider
 import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
+import parseDouble
 
 class SettingsPane:GridPane()
 {
@@ -138,5 +142,38 @@ class SettingsPane:GridPane()
         add(newSliderSetting.label,COL_INDEX_LABEL,nextRow)
         add(newSliderSetting.numberTextField,COL_INDEX_TEXTFIELD,nextRow)
         nextRow++
+    }
+}
+
+private class SliderSetting(private val allowDecimalNumbers:Boolean)
+{
+    val label:Label = Label()
+    var numberTextField:NumberTextField = NumberTextField()
+    var slider:Slider = Slider()
+
+    init
+    {
+        // configure numberTextField so when its value changes, it updates slider
+        numberTextField.textProperty().addListener(
+            {
+                value,oldValue,newValue ->
+                slider.value = parseDouble(newValue)
+                numberTextField.text = if (allowDecimalNumbers)
+                    slider.value.toString()
+                else Math.round(slider.value).toString()
+            })
+
+        // configure slider so when its value changes, it updates numberTextField
+        slider.maxWidth = java.lang.Double.MAX_VALUE
+        slider.valueProperty().addListener(
+            {
+                value,oldValue,newValue ->
+                numberTextField.text = newValue.toString()
+            })
+    }
+
+    fun valueProperty():DoubleProperty
+    {
+        return slider.valueProperty()
     }
 }

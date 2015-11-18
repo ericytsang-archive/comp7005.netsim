@@ -1,9 +1,10 @@
 package gui
 
-import gui.components.ProgressDisplay
-import gui.components.TextDisplay
 import javafx.geometry.HPos
 import javafx.geometry.Insets
+import javafx.scene.control.Label
+import javafx.scene.control.ProgressBar
+import javafx.scene.control.TextField
 import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
@@ -88,4 +89,16 @@ class StatisticsPane:GridPane()
         add(newProgressDisplay.progressBar,COL_INDEX_CONTENT,nextRow)
         nextRow++
     }
+}
+
+private class TextDisplay()
+{
+    val label:Label = Label()
+    val value:Label = Label()
+}
+
+private class ProgressDisplay()
+{
+    val label:Label = Label()
+    val progressBar:ProgressBar = ProgressBar()
 }
