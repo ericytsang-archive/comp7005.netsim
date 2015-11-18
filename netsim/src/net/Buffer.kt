@@ -5,6 +5,6 @@ package net;
  */
 public interface Buffer<Element>
 {
-    fun put(element:Element):Unit;
+    fun put(element:Element);
     fun get():Element;
 }

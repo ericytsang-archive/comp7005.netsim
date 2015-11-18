@@ -4,12 +4,11 @@ import javafx.geometry.HPos
 import javafx.geometry.Insets
 import javafx.scene.control.Label
 import javafx.scene.control.ProgressBar
-import javafx.scene.control.TextField
 import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
 
-class StatisticsPane:GridPane()
+internal class StatisticsPane:GridPane()
 {
     private val COL_INDEX_LABEL:Int = 0
     private val COL_INDEX_CONTENT:Int = 1

@@ -3,7 +3,7 @@ package gui
 /**
  * Created by Eric Tsang on 11/8/2015.
  */
-object Dimens
+internal object Dimens
 {
     val KEYLINE_SMALL:Int = 8
     val KEYLINE_MEDIUM:Int = 16

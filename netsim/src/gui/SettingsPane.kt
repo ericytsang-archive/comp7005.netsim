@@ -1,6 +1,5 @@
 package gui
 
-import gui.NumberTextField
 import javafx.beans.property.DoubleProperty
 import javafx.geometry.HPos
 import javafx.geometry.Insets
@@ -11,7 +10,7 @@ import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
 import parseDouble
 
-class SettingsPane:GridPane()
+internal class SettingsPane:GridPane()
 {
     private val COL_INDEX_LABEL = 0
     private val COL_INDEX_TEXTFIELD = 1

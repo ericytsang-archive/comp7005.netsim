@@ -3,7 +3,7 @@ package gui
 import javafx.scene.control.TextField
 import parseDouble
 
-class NumberTextField:TextField()
+internal class NumberTextField:TextField()
 {
     private var min:Double = Double.MIN_VALUE
     private var max:Double = Double.MAX_VALUE

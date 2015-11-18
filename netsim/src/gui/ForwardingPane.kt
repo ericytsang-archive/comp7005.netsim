@@ -1,6 +1,5 @@
 package gui
 
-import gui.NumberTextField
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
 import javafx.scene.layout.Border
@@ -12,10 +11,7 @@ import javafx.scene.layout.VBox
 import javafx.scene.paint.Paint
 import java.net.InetAddress
 
-/**
- * Created by Eric Tsang on 11/8/2015.
- */
-class ForwardingPane:VBox()
+internal class ForwardingPane:VBox()
 {
     init
     {
