@@ -1,6 +1,6 @@
 package gui
 
-import gui.components.NumberTextField
+import gui.NumberTextField
 import javafx.beans.property.DoubleProperty
 import javafx.geometry.HPos
 import javafx.geometry.Insets

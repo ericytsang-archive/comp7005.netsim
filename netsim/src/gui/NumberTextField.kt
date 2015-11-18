@@ -1,4 +1,4 @@
-package gui.components
+package gui
 
 import javafx.scene.control.TextField
 import parseDouble
