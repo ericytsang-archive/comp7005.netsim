@@ -69,20 +69,20 @@ internal class StatisticsPane:GridPane()
         throughputDisplay.label.text = THROUGHPUT_LABEL
         throughputDisplay.progressBar.progressProperty().value = THROUGHPUT_DEFAULT
 
-        addTextDisplay(packetsDeliveredDisplay)
-        addTextDisplay(packetsDroppedDisplay)
-        addProgressDisplay(bytesInFlightDisplay)
-        addProgressDisplay(throughputDisplay)
+        add(packetsDeliveredDisplay)
+        add(packetsDroppedDisplay)
+        add(bytesInFlightDisplay)
+        add(throughputDisplay)
     }
 
-    private fun addTextDisplay(newTextDisplay:TextDisplay)
+    private fun add(newTextDisplay:TextDisplay)
     {
         add(newTextDisplay.label,COL_INDEX_LABEL,nextRow)
         add(newTextDisplay.value,COL_INDEX_CONTENT,nextRow)
         nextRow++
     }
 
-    private fun addProgressDisplay(newProgressDisplay:ProgressDisplay)
+    private fun add(newProgressDisplay:ProgressDisplay)
     {
         add(newProgressDisplay.label,COL_INDEX_LABEL,nextRow)
         add(newProgressDisplay.progressBar,COL_INDEX_CONTENT,nextRow)
