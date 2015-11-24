@@ -1,6 +1,7 @@
 package gui
 
-import javafx.beans.property.DoubleProperty
+import javafx.beans.InvalidationListener
+import javafx.beans.property.*
 import javafx.geometry.HPos
 import javafx.geometry.Insets
 import javafx.scene.control.Label
@@ -12,6 +13,13 @@ import parse
 
 internal class SettingsPane:GridPane()
 {
+    val serverPort:IntegerProperty = SimpleIntegerProperty(0)
+    val networkCapacity:IntegerProperty = SimpleIntegerProperty(0)
+    val packetDropFunction:DoubleProperty = SimpleDoubleProperty(0.0)
+    val noise:DoubleProperty = SimpleDoubleProperty(0.0)
+    val jitter:LongProperty = SimpleLongProperty(0)
+    val latency:LongProperty = SimpleLongProperty(0)
+
     private val COL_INDEX_LABEL = 0
     private val COL_INDEX_TEXTFIELD = 1
     private val COL_INDEX_SLIDER = 2
@@ -83,6 +91,10 @@ internal class SettingsPane:GridPane()
         serverPortControl.slider.max = SERVER_PORT_MAX
         serverPortControl.slider.min = SERVER_PORT_MIN
         serverPortControl.slider.value = SERVER_PORT_DEFAULT
+        serverPortControl.slider.valueProperty().addListener{
+            value,oldValue,newValue ->
+            serverPort.value = Math.round(newValue.toFloat())
+        }
 
         // packetDropFunctionControl
         val networkCapacityControl = SliderSetting(false)
@@ -90,6 +102,11 @@ internal class SettingsPane:GridPane()
         networkCapacityControl.slider.max = NETWORK_CAPACITY_MAX
         networkCapacityControl.slider.min = NETWORK_CAPACITY_MIN
         networkCapacityControl.slider.value = NETWORK_CAPACITY_DEFAULT
+        networkCapacityControl.slider.valueProperty().addListener(
+            {
+                value,oldValue,newValue ->
+                networkCapacity.value = Math.round(newValue.toFloat())
+            })
 
         // packetDropFunctionControl
         val packetDropFunctionControl = SliderSetting(true)
@@ -97,6 +114,11 @@ internal class SettingsPane:GridPane()
         packetDropFunctionControl.slider.max = PACKET_DROP_FUN_MAX
         packetDropFunctionControl.slider.min = PACKET_DROP_FUN_MIN
         packetDropFunctionControl.slider.value = PACKET_DROP_FUN_DEFAULT
+        packetDropFunctionControl.slider.valueProperty().addListener(
+            {
+                value,oldValue,newValue ->
+                packetDropFunction.value = newValue.toDouble()
+            })
 
         // noiseControl
         val noiseControl = SliderSetting(true)
@@ -104,6 +126,11 @@ internal class SettingsPane:GridPane()
         noiseControl.slider.max = NOISE_MAX
         noiseControl.slider.min = NOISE_MIN
         noiseControl.slider.value = NOISE_DEFAULT
+        noiseControl.slider.valueProperty().addListener(
+            {
+                value,oldValue,newValue ->
+                noise.value = newValue.toDouble()
+            })
 
         // latencyControl
         val latencyControl = SliderSetting(false)
@@ -111,6 +138,11 @@ internal class SettingsPane:GridPane()
         latencyControl.slider.max = LATENCY_MAX
         latencyControl.slider.min = LATENCY_MIN
         latencyControl.slider.value = LATENCY_DEFAULT
+        latencyControl.slider.valueProperty().addListener(
+            {
+                value,oldValue,newValue ->
+                latency.value = Math.round(newValue.toDouble())
+            })
 
         // jitterControl
         val jitterControl = SliderSetting(false)
@@ -118,6 +150,11 @@ internal class SettingsPane:GridPane()
         jitterControl.slider.max = JITTER_MAX
         jitterControl.slider.min = JITTER_MIN
         jitterControl.slider.value = JITTER_DEFAULT
+        jitterControl.slider.valueProperty().addListener(
+            {
+                value,oldValue,newValue ->
+                jitter.value = Math.round(newValue.toDouble())
+            })
 
         // add nodes to layout
         addNumberTextFieldSetting(serverPortControl)
