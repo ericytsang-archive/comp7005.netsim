@@ -2,6 +2,7 @@ package gui
 
 import javafx.application.Application
 import javafx.scene.Scene
+import javafx.scene.control.ScrollPane
 import javafx.scene.layout.Border
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.BorderStroke
@@ -24,8 +25,10 @@ class Window:Application()
     {
         // configure the stage stage (the window)
         primaryStage.title = WINDOW_TITLE
+
         // set the scene (inside the window)
         primaryStage.scene = Scene(ContentPane(),WINDOW_WIDTH.toDouble(),WINDOW_HEIGHT.toDouble())
+        primaryStage.scene.stylesheets.add("./gui/style.css")
         primaryStage.show()
     }
 
@@ -37,21 +40,24 @@ class Window:Application()
             border = Border(BorderStroke(Paint.valueOf("f00"),BorderStrokeStyle.DASHED,CornerRadii(10.0),BorderWidths(3.0)))
 
             // ForwardingPane
-            center = ForwardingPane()
+            val scrollPane = ScrollPane()
+            scrollPane.content = ForwardingPane()
 
             // SettingsPane, StatisticsPane
-            val bottom = GridPane()
-            bottom.isGridLinesVisible = true
+            val bottomGrid = GridPane()
+            bottomGrid.isGridLinesVisible = true
 
             val constraints = ColumnConstraints()
             constraints.isFillWidth = true
             constraints.hgrow = Priority.ALWAYS
-            bottom.columnConstraints.add(constraints)
-            bottom.columnConstraints.add(constraints)
+            bottomGrid.columnConstraints.add(constraints)
+            bottomGrid.columnConstraints.add(constraints)
 
-            bottom.add(SettingsPane(),0,0)
-            bottom.add(StatisticsPane(),1,0)
-            setBottom(bottom)
+            bottomGrid.add(SettingsPane(),0,0)
+            bottomGrid.add(StatisticsPane(),1,0)
+
+            center = scrollPane
+            bottom = bottomGrid
         }
     }
 }

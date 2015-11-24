@@ -8,7 +8,7 @@ import javafx.scene.control.Slider
 import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
-import parseDouble
+import parse
 
 internal class SettingsPane:GridPane()
 {
@@ -131,7 +131,7 @@ internal class SettingsPane:GridPane()
     private fun addSliderSetting(newSliderSetting:SliderSetting)
     {
         add(newSliderSetting.label,COL_INDEX_LABEL,nextRow)
-        add(newSliderSetting.numberTextField,COL_INDEX_TEXTFIELD,nextRow)
+        add(newSliderSetting.doubleTextField,COL_INDEX_TEXTFIELD,nextRow)
         add(newSliderSetting.slider,COL_INDEX_SLIDER,nextRow)
         nextRow++
     }
@@ -139,7 +139,7 @@ internal class SettingsPane:GridPane()
     private fun addNumberTextFieldSetting(newSliderSetting:SliderSetting)
     {
         add(newSliderSetting.label,COL_INDEX_LABEL,nextRow)
-        add(newSliderSetting.numberTextField,COL_INDEX_TEXTFIELD,nextRow)
+        add(newSliderSetting.doubleTextField,COL_INDEX_TEXTFIELD,nextRow)
         nextRow++
     }
 }
@@ -147,17 +147,17 @@ internal class SettingsPane:GridPane()
 private class SliderSetting(private val allowDecimalNumbers:Boolean)
 {
     val label:Label = Label()
-    var numberTextField:NumberTextField = NumberTextField()
+    var doubleTextField:DoubleTextField = DoubleTextField()
     var slider:Slider = Slider()
 
     init
     {
         // configure numberTextField so when its value changes, it updates slider
-        numberTextField.textProperty().addListener(
+        doubleTextField.textProperty().addListener(
             {
                 value,oldValue,newValue ->
-                slider.value = parseDouble(newValue)
-                numberTextField.text = if (allowDecimalNumbers)
+                slider.value = Double.parse(newValue)
+                doubleTextField.text = if (allowDecimalNumbers)
                     slider.value.toString()
                 else Math.round(slider.value).toString()
             })
@@ -167,7 +167,7 @@ private class SliderSetting(private val allowDecimalNumbers:Boolean)
         slider.valueProperty().addListener(
             {
                 value,oldValue,newValue ->
-                numberTextField.text = newValue.toString()
+                doubleTextField.text = newValue.toString()
             })
     }
 

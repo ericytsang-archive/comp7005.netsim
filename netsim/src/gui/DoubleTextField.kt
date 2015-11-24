@@ -1,24 +1,25 @@
 package gui
 
 import javafx.scene.control.TextField
-import parseDouble
+import parse
 
-internal class NumberTextField:TextField()
+internal class DoubleTextField:TextField()
 {
-    private var min:Double = Double.MIN_VALUE
-    private var max:Double = Double.MAX_VALUE
+    var min:Double = Double.MIN_VALUE
 
-    fun setMax(newMax:Double)
-    {
-        max = newMax
-        if (min > newMax) min = max
-    }
+        set(newMin:Double)
+        {
+            field = newMin
+            if (max < newMin) max = min
+        }
 
-    fun setMin(newMin:Double)
-    {
-        min = newMin
-        if (max < newMin) max = min
-    }
+    var max:Double = Double.MAX_VALUE
+
+        set(newMax:Double)
+        {
+            field = newMax
+            if (min > newMax) min = max
+        }
 
     fun setValue(newValue:Double)
     {
@@ -31,12 +32,11 @@ internal class NumberTextField:TextField()
         try
         {
             val newText = getText(0,start)+text+getText(end,length)
-            setValue(parseDouble(newText))
+            setValue(Double.parse(newText))
         }
         catch (e:NumberFormatException)
         {
             // don't replace text
         }
-
     }
 }

@@ -1,13 +1,16 @@
 package gui
 
 import javafx.beans.InvalidationListener
-import javafx.beans.value.ChangeListener
-import javafx.geometry.HPos
 import javafx.geometry.Insets
 import javafx.scene.control.Label
+import javafx.scene.control.Skin
 import javafx.scene.control.TextField
+import javafx.scene.effect.Effect
 import javafx.scene.layout.*
+import javafx.scene.paint.Paint
+import parse
 import java.net.InetSocketAddress
+import java.util.*
 
 internal class ForwardingPane:GridPane()
 {
@@ -22,7 +25,12 @@ internal class ForwardingPane:GridPane()
     private val COLON_LABEL_TEXT:String = ":";
     private val BI_DIR_ARROW_TEXT:String = "<->"
 
+    val inetSockAddressPairs:MutableMap<InetSocketAddress,InetSocketAddress> = LinkedHashMap()
+
+    private val inetSockAddresses:MutableMap<ForwardingEntry,MutableSet<InetSocketAddress>> = LinkedHashMap()
+
     private var nextRow:Int = 0
+    private val forwardingEntryObserver:ForwardingEntryObserver = ForwardingEntryObserver()
 
     init
     {
@@ -54,7 +62,9 @@ internal class ForwardingPane:GridPane()
 
     private fun addChildNodes()
     {
-        add(ForwardingEntry())
+        val forwardingEntry = ForwardingEntry()
+        forwardingEntry.stateObserver = forwardingEntryObserver
+        add(forwardingEntry)
     }
 
     private fun add(forwardingEntry:ForwardingEntry)
@@ -68,53 +78,135 @@ internal class ForwardingPane:GridPane()
         add(forwardingEntry.port2,COL_INDEX_PORT2,nextRow)
         nextRow++
     }
+
+    private inner class ForwardingEntryObserver:ForwardingEntry.Observer
+    {
+        override fun onDataChanged(observee:ForwardingEntry)
+        {
+            synchronized(this,
+                {
+                    // find all associated address entries previously related to
+                    // this input, and remove them from the address map...later,
+                    // we will add the addresses from the observee to the
+                    // address map if it is ok to do so
+                    inetSockAddresses.remove(observee)
+                        ?.forEach{inetSockAddressPairs.remove(it)}
+
+                    val sockAddr1 = observee.sockAddr1
+                    val sockAddr2 = observee.sockAddr2
+
+                    // when there are valid address inputs, and they don't
+                    // conflict with other entries, unset [observee.error], and
+                    // add the address entries to the address map
+                    if(sockAddr1 != null && sockAddr2 != null
+                        && !sockAddr1.equals(sockAddr2)
+                        && !inetSockAddressPairs.containsKey(sockAddr1)
+                        && !inetSockAddressPairs.containsKey(sockAddr2))
+                    {
+                        observee.error = false
+                        inetSockAddressPairs.put(sockAddr1,sockAddr2)
+                        inetSockAddressPairs.put(sockAddr2,sockAddr1)
+                        inetSockAddresses.getOrPut(observee,{LinkedHashSet()})
+                            .addAll(arrayOf(sockAddr1,sockAddr2))
+                    }
+
+                    // when inputs are invalid, set [observee.error]
+                    else
+                    {
+                        observee.error = true
+                    }
+                })
+        }
+    }
 }
 
-// todo: do disss
 private class ForwardingEntry()
 {
-    val ADDR_PROMPT:String = "IP Address"
-    val PORT_PROMPT:String = "Port Number"
+    private val ADDR_PROMPT:String = "IP Address"
+    private val PORT_PROMPT:String = "Port Number"
+
+    private val CSS_CLASS_WARNING:String = "warning"
 
     val addr1:TextField = TextField()
-    val port1:NumberTextField = NumberTextField()
+    val port1:IntTextField = IntTextField()
     val addr2:TextField = TextField()
-    val port2:NumberTextField = NumberTextField()
+    val port2:IntTextField = IntTextField()
 
     var sockAddr1:InetSocketAddress? = null
-        private set(value) {sockAddr1 = value}
+        private set
     var sockAddr2:InetSocketAddress? = null
-        private set(value) {sockAddr2 = value}
+        private set
+    var error:Boolean = false
+        set(value)
+        {
+            if(field == value) return
+            field = value
+            if (field)
+            {
+                addr1.styleClass.add(CSS_CLASS_WARNING)
+                port1.styleClass.add(CSS_CLASS_WARNING)
+                addr2.styleClass.add(CSS_CLASS_WARNING)
+                port2.styleClass.add(CSS_CLASS_WARNING)
+            }
+            else
+            {
+                addr1.styleClass.remove(CSS_CLASS_WARNING)
+                port1.styleClass.remove(CSS_CLASS_WARNING)
+                addr2.styleClass.remove(CSS_CLASS_WARNING)
+                port2.styleClass.remove(CSS_CLASS_WARNING)
+            }
+        }
 
     var stateObserver:ForwardingEntry.Observer? = null
 
     init
     {
         // set on action code
-        addr1.textProperty().addListener(InvalidationListener { validateAndNotifyIfStateChanged() })
-        port1.textProperty().addListener(InvalidationListener { validateAndNotifyIfStateChanged() })
-        addr2.textProperty().addListener(InvalidationListener { validateAndNotifyIfStateChanged() })
-        port2.textProperty().addListener(InvalidationListener { validateAndNotifyIfStateChanged() })
+        addr1.textProperty().addListener(InvalidationListener{validateAndNotify()})
+        port1.textProperty().addListener(InvalidationListener{validateAndNotify()})
+        addr2.textProperty().addListener(InvalidationListener{validateAndNotify()})
+        port2.textProperty().addListener(InvalidationListener{validateAndNotify()})
 
         // add prompt text to text fields
         addr1.promptText = ADDR_PROMPT
         port1.promptText = PORT_PROMPT
         addr2.promptText = ADDR_PROMPT
         port2.promptText = PORT_PROMPT
+
+        // configure mins and maxs of port text fields
+        port1.min = NetUtils.MIN_PORT
+        port1.max = NetUtils.MAX_PORT
+        port2.min = NetUtils.MIN_PORT
+        port2.max = NetUtils.MAX_PORT
     }
 
-    private fun validateAndNotifyIfStateChanged()
+    private fun validateAndNotify()
     {
-        System.out.println("${addr1.text}:${port1.text}<->${addr2.text}:${port2.text}");
+        try
+        {
+            sockAddr1 = null
+            sockAddr2 = null
+            if(addr1.text.isBlank() || addr2.text.isBlank()) throw IllegalArgumentException()
+            sockAddr1 = InetSocketAddress.createUnresolved(addr1.text,Int.parse(port1.text))
+            sockAddr2 = InetSocketAddress.createUnresolved(addr2.text,Int.parse(port2.text))
+        }
+        catch(ex:IllegalArgumentException)
+        {
+            // thrown by createUnresolved if the port parameter is outside the
+            // range of valid port values, or if the hostname parameter is null.
+        }
+        catch(ex:NumberFormatException)
+        {
+            // thrown by Int.parse..this should never be thrown anyway lel
+        }
+        finally
+        {
+            stateObserver?.onDataChanged(this)
+        }
     }
 
-    private fun validate():Boolean
+    interface Observer
     {
-        return true
-    }
-
-    private interface Observer
-    {
-        fun onDataChanged();
+        fun onDataChanged(observee:ForwardingEntry);
     }
 }
