@@ -3,7 +3,7 @@ package gui
 import javafx.scene.control.TextField
 import parse
 
-internal class IntTextField:TextField()
+internal class IntTextField(var allowEmpty:Boolean = false):TextField()
 {
     var min:Int = Int.MIN_VALUE
 
@@ -29,14 +29,17 @@ internal class IntTextField:TextField()
 
     override fun replaceText(start:Int,end:Int,text:String)
     {
+        val newText = getText(0,start)+text+getText(end,length)
         try
         {
-            val newText = getText(0,start)+text+getText(end,length)
             setValue(Int.parse(newText))
         }
         catch (e:NumberFormatException)
         {
-            // don't replace text
+            if(allowEmpty && newText.isEmpty())
+            {
+                super.replaceText(0,length,newText)
+            }
         }
     }
 }

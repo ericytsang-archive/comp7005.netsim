@@ -18,7 +18,7 @@ import javafx.stage.Stage
 class Window:Application()
 {
     private val WINDOW_TITLE = "Window Title"
-    private val WINDOW_WIDTH = 700
+    private val WINDOW_WIDTH = 725
     private val WINDOW_HEIGHT = 480
 
     override fun start(primaryStage:Stage)
@@ -36,9 +36,6 @@ class Window:Application()
     {
         init
         {
-            // add a red, dashed 3 pixel, rounded thick border about the layout
-            border = Border(BorderStroke(Paint.valueOf("f00"),BorderStrokeStyle.DASHED,CornerRadii(10.0),BorderWidths(3.0)))
-
             // ForwardingPane
             val scrollPane = ScrollPane()
             scrollPane.content = ForwardingPane()

@@ -3,11 +3,8 @@ package gui
 import javafx.beans.InvalidationListener
 import javafx.geometry.Insets
 import javafx.scene.control.Label
-import javafx.scene.control.Skin
 import javafx.scene.control.TextField
-import javafx.scene.effect.Effect
 import javafx.scene.layout.*
-import javafx.scene.paint.Paint
 import parse
 import java.net.InetSocketAddress
 import java.util.*
@@ -27,18 +24,13 @@ internal class ForwardingPane:GridPane()
 
     val inetSockAddressPairs:MutableMap<InetSocketAddress,InetSocketAddress> = LinkedHashMap()
 
-    private val inetSockAddresses:MutableMap<ForwardingEntry,MutableSet<InetSocketAddress>> = LinkedHashMap()
-
     private var nextRow:Int = 0
+
+    private val inetSockAddresses:MutableMap<ForwardingEntry,MutableSet<InetSocketAddress>> = LinkedHashMap()
+    private val forwardingEntries:MutableSet<ForwardingEntry> = LinkedHashSet()
     private val forwardingEntryObserver:ForwardingEntryObserver = ForwardingEntryObserver()
 
     init
-    {
-        configureLayout()
-        addChildNodes()
-    }
-
-    private fun configureLayout()
     {
         // configure aesthetic properties
         padding = Insets(Dimens.KEYLINE_SMALL.toDouble())
@@ -58,13 +50,9 @@ internal class ForwardingPane:GridPane()
         lastColumn.isFillWidth = true
         lastColumn.hgrow = Priority.ALWAYS
         columnConstraints.add(1,lastColumn)
-    }
 
-    private fun addChildNodes()
-    {
-        val forwardingEntry = ForwardingEntry()
-        forwardingEntry.stateObserver = forwardingEntryObserver
-        add(forwardingEntry)
+        // add gui controls
+        add(ForwardingEntry())
     }
 
     private fun add(forwardingEntry:ForwardingEntry)
@@ -76,7 +64,15 @@ internal class ForwardingPane:GridPane()
         add(forwardingEntry.addr2,COL_INDEX_ADDR2,nextRow)
         add(Label(COLON_LABEL_TEXT),COL_INDEX_COLON2,nextRow)
         add(forwardingEntry.port2,COL_INDEX_PORT2,nextRow)
+        forwardingEntry.stateObserver = forwardingEntryObserver
+        forwardingEntries.add(forwardingEntry)
         nextRow++
+    }
+
+    private fun removeAll()
+    {
+        children.clear()
+        nextRow = 0
     }
 
     private inner class ForwardingEntryObserver:ForwardingEntry.Observer
@@ -115,6 +111,14 @@ internal class ForwardingPane:GridPane()
                     {
                         observee.error = true
                     }
+
+                    // if there are no text in any of the text fields, remove it
+                    removeAll()
+                    forwardingEntries.filter{it.addr1.length == 0
+                        && it.port1.length == 0 && it.addr2.length == 0
+                        && it.port2.length == 0}.forEach{forwardingEntries.remove(it)}
+                    forwardingEntries.forEach{add(it)}
+                    add(ForwardingEntry())
                 })
         }
     }
@@ -128,15 +132,20 @@ private class ForwardingEntry()
     private val CSS_CLASS_WARNING:String = "warning"
 
     val addr1:TextField = TextField()
-    val port1:IntTextField = IntTextField()
+    val port1:IntTextField = IntTextField(true)
     val addr2:TextField = TextField()
-    val port2:IntTextField = IntTextField()
+    val port2:IntTextField = IntTextField(true)
 
     var sockAddr1:InetSocketAddress? = null
+
         private set
+
     var sockAddr2:InetSocketAddress? = null
+
         private set
+
     var error:Boolean = false
+
         set(value)
         {
             if(field == value) return
