@@ -28,7 +28,7 @@ class DelayQueueBuffer<Element>:Buffer<Element>
         val delay = baseDelay+(delayNoise*Math.random()).toLong()
 
         // enqueue the element
-        delayQueue.put(DelayedElement(delay,element))
+        delayQueue.put(DelayedElement(System.currentTimeMillis()+delay,element))
     }
 
     override fun get():Element
@@ -41,20 +41,21 @@ class DelayQueueBuffer<Element>:Buffer<Element>
      *   milliseconds before it may be removed
      * @param element element that is being inserted into the collection
      */
-    private inner class DelayedElement(private val delay:Long,val element:Element):Delayed
+    private inner class DelayedElement(private val timeToDequeue:Long,val element:Element):Delayed
     {
         override fun getDelay(unit:TimeUnit):Long
         {
-            return TimeUnit.MILLISECONDS.convert(delay,unit)
+            val delay = timeToDequeue-System.currentTimeMillis()
+            return unit.convert(delay,TimeUnit.MILLISECONDS)
         }
 
-        override fun compareTo(o:Delayed):Int
+        override fun compareTo(other:Delayed):Int
         {
             var difference:Long
-            difference = getDelay(TimeUnit.MILLISECONDS)-o.getDelay(TimeUnit.MILLISECONDS)
-            difference = Math.max(difference,Integer.MIN_VALUE.toLong())
-            difference = Math.min(difference,Integer.MAX_VALUE.toLong())
-            return (difference).toInt()
+            difference = getDelay(TimeUnit.MILLISECONDS)-other.getDelay(TimeUnit.MILLISECONDS)
+            difference = Math.max(difference,-1)
+            difference = Math.min(difference,1)
+            return difference.toInt()
         }
     }
 }

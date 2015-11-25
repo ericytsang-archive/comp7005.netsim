@@ -34,6 +34,7 @@ class Window:Application()
         primaryStage.show()
 
         // bind setting pane properties to modify network simulator values
+        // todo: initialize every one of the netsim's fields from the setting's defaults
         settingsPane.jitter.addListener(InvalidationListener
             {
                 netsim.jitter = settingsPane.jitter.value
@@ -58,6 +59,12 @@ class Window:Application()
             {
                 netsim.port = settingsPane.serverPort.value
             })
+
+        // set network simulator's routing table from the routing table in the
+        // forwarding pane
+        netsim.routingTable = forwardingPane.inetSockAddressPairs
+
+        // todo: hook up the network simulator to the statistics pane
     }
 
     private inner class ContentPane:BorderPane()

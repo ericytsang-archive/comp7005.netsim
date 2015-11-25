@@ -6,6 +6,7 @@ import javafx.scene.control.Label
 import javafx.scene.control.TextField
 import javafx.scene.layout.*
 import parse
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.util.*
 
@@ -194,8 +195,8 @@ private class ForwardingEntry()
             sockAddr1 = null
             sockAddr2 = null
             if(addr1.text.isBlank() || addr2.text.isBlank()) throw IllegalArgumentException()
-            sockAddr1 = InetSocketAddress.createUnresolved(addr1.text,Int.parse(port1.text))
-            sockAddr2 = InetSocketAddress.createUnresolved(addr2.text,Int.parse(port2.text))
+            sockAddr1 = InetSocketAddress(addr1.text,Int.parse(port1.text))
+            sockAddr2 = InetSocketAddress(addr2.text,Int.parse(port2.text))
         }
         catch(ex:IllegalArgumentException)
         {

@@ -9,7 +9,12 @@ class NetworkSimulator
     private var datagramSocket:DatagramSocket = DatagramSocket();
     private val delayQueueBuffer:DelayQueueBuffer<DatagramPacket> = DelayQueueBuffer()
     private var receiver:Receiver? = null
-    private val forwarder:Forwarder = Forwarder()
+    private val forwarder:Forwarder
+
+    init
+    {
+        forwarder = Forwarder()
+    }
 
     var routingTable:Map<InetSocketAddress,InetSocketAddress>? = null
 
@@ -75,8 +80,14 @@ class NetworkSimulator
     {
         override fun onExtract(extractedItem:DatagramPacket)
         {
-            extractedItem.socketAddress = routingTable?.get(extractedItem.socketAddress as InetSocketAddress)
-            datagramSocket.send(extractedItem)
+            val srcSockAddr = InetSocketAddress(extractedItem.address,extractedItem.port)
+            val dstSockAddr = routingTable?.get(srcSockAddr)
+            if(dstSockAddr != null)
+            {
+                extractedItem.address = dstSockAddr.address
+                extractedItem.port = dstSockAddr.port
+                datagramSocket.send(extractedItem)
+            }
         }
     }
 }
