@@ -93,7 +93,7 @@ internal class ForwardingPane:GridPane()
                     // when there are valid address inputs, and they don't
                     // conflict with other entries, unset [observee.error], and
                     // add the address entries to the address map
-                    if(sockAddr1 != null && sockAddr2 != null
+                    if (sockAddr1 != null && sockAddr2 != null
                         && !sockAddr1.equals(sockAddr2)
                         && !inetSockAddressPairs.containsKey(sockAddr1)
                         && !inetSockAddressPairs.containsKey(sockAddr2))
@@ -113,10 +113,11 @@ internal class ForwardingPane:GridPane()
 
                     // if there are no text in any of the text fields, remove it
                     removeAll()
-                    forwardingEntries.filter{it.addr1.length == 0
+                    forwardingEntries.filter({it.addr1.length == 0
                         && it.port1.length == 0 && it.addr2.length == 0
-                        && it.port2.length == 0}.forEach{forwardingEntries.remove(it)}
-                    forwardingEntries.forEach{add(it)}
+                        && it.port2.length == 0})
+                        .forEach{forwardingEntries.remove(it)}
+                    forwardingEntries.forEach { add(it) }
                     add(ForwardingEntry())
                 })
         }
@@ -139,7 +140,7 @@ private class ForwardingEntry()
 
         set(value)
         {
-            if(field == value) return
+            if (field == value) return
             field = value
             if (field)
             {
@@ -182,23 +183,25 @@ private class ForwardingEntry()
 
     private fun validateAndNotify()
     {
-        // interrupt the previous thread so it will abort its callback operation
-        validationThread.interrupt()
+        // todo: we want subsequently created threads to have the final say, even if they finish faster then prior threads...this doesnt seem to be happening...plz fix
+        synchronized(this,{
+            // interrupt the previous thread so it will abort its callback operation
+            validationThread.interrupt()
 
-        // begin the validation on the validation thread
-        validationThread = Thread(
-            {
+            // begin the validation on the validation thread
+            validationThread = Thread({
                 try
                 {
                     // try to resolde addresses
                     val sockAddr1 = InetSocketAddress(addr1.text,Int.parse(port1.text))
                     val sockAddr2 = InetSocketAddress(addr2.text,Int.parse(port2.text))
 
-                    // if addresses were not resolved, input is invalid; throw
-                    if(sockAddr1.isUnresolved || sockAddr2.isUnresolved) throw IllegalArgumentException()
-
                     // if the thread has been interrupted, throw interrupted exception
-                    if(Thread.interrupted()) throw InterruptedException()
+                    if (Thread.interrupted()) throw InterruptedException()
+
+                    // if addresses were not resolved, input is invalid; throw
+                    if (sockAddr1.isUnresolved || sockAddr2.isUnresolved)
+                        throw IllegalArgumentException()
 
                     // set instance variable sock addresses
                     Platform.runLater(
@@ -225,10 +228,11 @@ private class ForwardingEntry()
                 }
                 catch(ex:InterruptedException)
                 {
-                    println("InterruptedException: ${ex.message}")
+                    println("InterruptedException")
                 }
             })
-        validationThread.start()
+            validationThread.start()
+        })
     }
 
     interface Observer
