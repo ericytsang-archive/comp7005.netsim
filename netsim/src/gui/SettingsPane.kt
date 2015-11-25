@@ -86,74 +86,75 @@ internal class SettingsPane:GridPane()
     {
         // serverPortControl
         val serverPortControl = SliderSetting(false)
+        serverPortControl.slider.valueProperty().addListener(
+            {
+                value,oldValue,newValue ->
+                serverPort.value = Math.round(newValue.toFloat())
+            })
         serverPortControl.label.text = SERVER_PORT_LABEL
         serverPortControl.slider.max = SERVER_PORT_MAX
         serverPortControl.slider.min = SERVER_PORT_MIN
         serverPortControl.slider.value = SERVER_PORT_DEFAULT
-        serverPortControl.slider.valueProperty().addListener{
-            value,oldValue,newValue ->
-            serverPort.value = Math.round(newValue.toFloat())
-        }
 
         // packetDropFunctionControl
         val networkCapacityControl = SliderSetting(false)
-        networkCapacityControl.label.text = NETWORK_CAPACITY_LABEL
-        networkCapacityControl.slider.max = NETWORK_CAPACITY_MAX
-        networkCapacityControl.slider.min = NETWORK_CAPACITY_MIN
-        networkCapacityControl.slider.value = NETWORK_CAPACITY_DEFAULT
         networkCapacityControl.slider.valueProperty().addListener(
             {
                 value,oldValue,newValue ->
                 networkCapacity.value = Math.round(newValue.toFloat())
             })
+        networkCapacityControl.label.text = NETWORK_CAPACITY_LABEL
+        networkCapacityControl.slider.max = NETWORK_CAPACITY_MAX
+        networkCapacityControl.slider.min = NETWORK_CAPACITY_MIN
+        networkCapacityControl.slider.value = NETWORK_CAPACITY_DEFAULT
 
         // packetDropFunctionControl
         val packetDropFunctionControl = SliderSetting(false)
-        packetDropFunctionControl.label.text = PACKET_DROP_FUN_LABEL
-        packetDropFunctionControl.slider.max = PACKET_DROP_FUN_MAX
-        packetDropFunctionControl.slider.min = PACKET_DROP_FUN_MIN
-        packetDropFunctionControl.slider.value = PACKET_DROP_FUN_DEFAULT
         packetDropFunctionControl.slider.valueProperty().addListener(
             {
                 value,oldValue,newValue ->
                 packetDropFunction.value = Math.round(newValue.toFloat())
             })
+        packetDropFunctionControl.label.text = PACKET_DROP_FUN_LABEL
+        packetDropFunctionControl.slider.max = PACKET_DROP_FUN_MAX
+        packetDropFunctionControl.slider.min = PACKET_DROP_FUN_MIN
+        packetDropFunctionControl.slider.value = PACKET_DROP_FUN_DEFAULT
 
         // noiseControl
         val noiseControl = SliderSetting(true)
-        noiseControl.label.text = NOISE_LABEL
-        noiseControl.slider.max = NOISE_MAX
-        noiseControl.slider.min = NOISE_MIN
-        noiseControl.slider.value = NOISE_DEFAULT
         noiseControl.slider.valueProperty().addListener(
             {
                 value,oldValue,newValue ->
                 noise.value = newValue.toDouble()
             })
+        noiseControl.label.text = NOISE_LABEL
+        noiseControl.slider.max = NOISE_MAX
+        noiseControl.slider.min = NOISE_MIN
+        noiseControl.slider.value = NOISE_DEFAULT
 
         // latencyControl
         val latencyControl = SliderSetting(false)
-        latencyControl.label.text = LATENCY_LABEL
-        latencyControl.slider.max = LATENCY_MAX
-        latencyControl.slider.min = LATENCY_MIN
-        latencyControl.slider.value = LATENCY_DEFAULT
         latencyControl.slider.valueProperty().addListener(
             {
                 value,oldValue,newValue ->
                 latency.value = Math.round(newValue.toDouble())
             })
+        latencyControl.label.text = LATENCY_LABEL
+        latencyControl.slider.max = LATENCY_MAX
+        latencyControl.slider.min = LATENCY_MIN
+        latencyControl.slider.value = LATENCY_DEFAULT
 
         // jitterControl
         val jitterControl = SliderSetting(false)
-        jitterControl.label.text = JITTER_LABEL
-        jitterControl.slider.max = JITTER_MAX
-        jitterControl.slider.min = JITTER_MIN
-        jitterControl.slider.value = JITTER_DEFAULT
         jitterControl.slider.valueProperty().addListener(
             {
                 value,oldValue,newValue ->
                 jitter.value = Math.round(newValue.toDouble())
             })
+        jitterControl.label.text = JITTER_LABEL
+        jitterControl.slider.max = JITTER_MAX
+        jitterControl.slider.min = JITTER_MIN
+        jitterControl.slider.value = JITTER_DEFAULT
 
         // add nodes to layout
         addNumberTextFieldSetting(serverPortControl)
@@ -193,9 +194,9 @@ private class SliderSetting(private val allowDecimalNumbers:Boolean)
             {
                 value,oldValue,newValue ->
                 slider.value = Double.parse(newValue)
-                doubleTextField.text = if (allowDecimalNumbers)
-                    slider.value.toString()
-                else Math.round(slider.value).toString()
+                doubleTextField.text =
+                    if (allowDecimalNumbers) slider.value.toString()
+                    else Math.round(slider.value).toString()
             })
 
         // configure slider so when its value changes, it updates numberTextField

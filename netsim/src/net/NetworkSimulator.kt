@@ -125,12 +125,16 @@ class NetworkSimulator
      */
     private inner class DropPacketProbabilityCalculatorDaemon:Thread()
     {
+        init
+        {
+            isDaemon = true
+        }
         override fun run()
         {
             while(true)
             {
                 // calculate
-                val x:Double = capacity.toDouble()/bytesInFlight.value.toDouble()
+                val x:Double = bytesInFlight.value.toDouble()/capacity.toDouble()
                 var y:Double
                 y = Math.pow(x,packetDropFunction.toDouble())
                 y = Math.max(noise,y)
