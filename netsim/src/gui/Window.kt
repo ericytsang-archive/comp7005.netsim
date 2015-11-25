@@ -71,7 +71,33 @@ class Window:Application()
         // forwarding pane
         netsim.routingTable = forwardingPane.inetSockAddressPairs
 
-        // todo: hook up the network simulator to the statistics pane
+        // hook up the network simulator to the statistics pane
+        netsim.bytesInFlight.addListener(InvalidationListener
+            {
+                statisticsPane.bytesInFlight = netsim.bytesInFlight.value.toDouble()/netsim.capacity.toDouble()
+            })
+        netsim.packetDropRate.addListener(InvalidationListener
+            {
+                statisticsPane.packetDropRate = netsim.packetDropRate.value
+            })
+        netsim.packetsDelivered.addListener(InvalidationListener
+            {
+                statisticsPane.packetsDelivered = netsim.packetsDelivered.value
+            })
+        netsim.packetsDropped.addListener(InvalidationListener
+            {
+                statisticsPane.packetsDropped = netsim.packetsDropped.value
+            })
+        netsim.socketStatus.addListener(InvalidationListener
+            {
+                statisticsPane.socketStatus = netsim.socketStatus.value
+            })
+        netsim.throughput.addListener(InvalidationListener
+            {
+                val nominator:Double = netsim.bytesInFlight.value.toDouble()/(netsim.latency+netsim.jitter.toDouble()/0.5).toDouble()
+                val denominator:Double = netsim.capacity.toDouble()/(netsim.latency+netsim.jitter.toDouble()/0.5).toDouble()
+                statisticsPane.throughput = nominator/denominator
+            })
     }
 
     private inner class ContentPane:BorderPane()

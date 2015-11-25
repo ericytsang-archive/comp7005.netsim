@@ -13,30 +13,83 @@ internal class StatisticsPane:GridPane()
     private val COL_INDEX_LABEL:Int = 0
     private val COL_INDEX_CONTENT:Int = 1
 
-    private val PACKETS_DELIVERED_LABEL:String = "Packets Delivered:"
-    private val PACKETS_DELIVERED_DEFAULT:Double = 0.0
-
     private val SOCKET_STATUS_LABEL:String = "Socket Status:"
     private val SOCKET_STATUS_DEFAULT:SocketStatus = SocketStatus.BIND_ERR
 
+    private val PACKETS_DELIVERED_LABEL:String = "Packets Delivered:"
+    private val PACKETS_DELIVERED_DEFAULT:Int = 0
+
     private val PACKETS_DROPPED_LABEL:String = "Packets Dropped:"
-    private val PACKETS_DROPPED_DEFAULT:Double = 0.0
+    private val PACKETS_DROPPED_DEFAULT:Int = 0
+
+    private val BYTES_IN_FLIGHT_LABEL:String = "Bytes In Flight:"
+    private val BYTES_IN_FLIGHT_DEFAULT:Double = 0.0
 
     private val THROUGHPUT_LABEL:String = "Throughput:"
     private val THROUGHPUT_DEFAULT:Double = 0.20
 
-    private val BYTES_IN_FLIGHT_LABEL:String = "Bytes In Flight:"
-    private val BYTES_IN_FLIGHT_DEFAULT:Double = 0.50
+    private val PACKET_DROP_RATE_LABEL:String = "Packet Drop Rate:"
+    private val PACKET_DROP_RATE_DEFAULT:Double = 0.0
 
     private var nextRow:Int = 0
 
-    init
-    {
-        configureLayout()
-        addChildNodes()
-    }
+    private val socketStatusDisplay = TextDisplay()
+    private val packetsDeliveredDisplay = TextDisplay()
+    private val packetsDroppedDisplay = TextDisplay()
+    private val bytesInFlightDisplay = ProgressDisplay()
+    private val throughputDisplay = ProgressDisplay()
+    private val packetDropRateDisplay = ProgressDisplay()
 
-    private fun configureLayout()
+    var socketStatus:SocketStatus = SOCKET_STATUS_DEFAULT
+
+        set(value)
+        {
+            socketStatusDisplay.value.text = SOCKET_STATUS_DEFAULT.friendlyString
+            socketStatusDisplay.value.styleClass.add(SOCKET_STATUS_DEFAULT.css)
+            field = value
+        }
+
+    var packetsDelivered:Int = PACKETS_DELIVERED_DEFAULT
+
+        set(value)
+        {
+            packetsDeliveredDisplay.value.text = PACKETS_DELIVERED_DEFAULT.toString()
+            field = value
+        }
+
+    var packetsDropped:Int = PACKETS_DROPPED_DEFAULT
+
+        set(value)
+        {
+            packetsDroppedDisplay.value.text = PACKETS_DROPPED_DEFAULT.toString()
+            field = value
+        }
+
+    var bytesInFlight:Double = BYTES_IN_FLIGHT_DEFAULT
+
+        set(value)
+        {
+            bytesInFlightDisplay.progressBar.progressProperty().value = BYTES_IN_FLIGHT_DEFAULT.toDouble()
+            field = value
+        }
+
+    var throughput:Double = THROUGHPUT_DEFAULT
+
+        set(value)
+        {
+            throughputDisplay.progressBar.progressProperty().value = THROUGHPUT_DEFAULT
+            field = value
+        }
+
+    var packetDropRate:Double = PACKET_DROP_RATE_DEFAULT
+
+        set(value)
+        {
+            packetDropRateDisplay.progressBar.progressProperty().value = THROUGHPUT_DEFAULT
+            field = value
+        }
+
+    init
     {
         // configure aesthetic properties
         padding = Insets(Dimens.KEYLINE_SMALL.toDouble())
@@ -52,36 +105,21 @@ internal class StatisticsPane:GridPane()
         column2.isFillWidth = true
         column2.hgrow = Priority.ALWAYS
         columnConstraints.add(1,column2)
-    }
 
-    private fun addChildNodes()
-    {
-        val socketStatusDisplay = TextDisplay()
+        // configure & add child nodes
         socketStatusDisplay.label.text = SOCKET_STATUS_LABEL
-        socketStatusDisplay.value.text = SOCKET_STATUS_DEFAULT.friendlyString
-        socketStatusDisplay.value.styleClass.add(SOCKET_STATUS_DEFAULT.css)
-
-        val packetsDeliveredDisplay = TextDisplay()
         packetsDeliveredDisplay.label.text = PACKETS_DELIVERED_LABEL
-        packetsDeliveredDisplay.value.text = PACKETS_DELIVERED_DEFAULT.toString()
-
-        val packetsDroppedDisplay = TextDisplay()
         packetsDroppedDisplay.label.text = PACKETS_DROPPED_LABEL
-        packetsDroppedDisplay.value.text = PACKETS_DROPPED_DEFAULT.toString()
-
-        val bytesInFlightDisplay = ProgressDisplay()
         bytesInFlightDisplay.label.text = BYTES_IN_FLIGHT_LABEL
-        bytesInFlightDisplay.progressBar.progressProperty().value = BYTES_IN_FLIGHT_DEFAULT
-
-        val throughputDisplay = ProgressDisplay()
         throughputDisplay.label.text = THROUGHPUT_LABEL
-        throughputDisplay.progressBar.progressProperty().value = THROUGHPUT_DEFAULT
+        packetDropRateDisplay.label.text = PACKET_DROP_RATE_LABEL
 
         add(socketStatusDisplay)
         add(packetsDeliveredDisplay)
         add(packetsDroppedDisplay)
         add(bytesInFlightDisplay)
         add(throughputDisplay)
+        add(packetDropRateDisplay)
     }
 
     private fun add(newTextDisplay:TextDisplay)

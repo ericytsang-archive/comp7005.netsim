@@ -73,11 +73,11 @@ class NetworkSimulator
     val packetsDropped = SimpleIntegerProperty(0)
     val bytesInFlight = SimpleIntegerProperty(0)
     val throughput = SimpleDoubleProperty(0.0)
-    val dropPacketProbability = SimpleDoubleProperty(0.0)
+    val packetDropRate = SimpleDoubleProperty(0.0)
 
     private fun rollToDropPacket():Boolean
     {
-        return roll(dropPacketProbability.value)
+        return roll(packetDropRate.value)
     }
 
     /**
@@ -139,8 +139,8 @@ class NetworkSimulator
                 y = Math.pow(x,packetDropFunction.toDouble())
                 y = Math.max(noise,y)
 
-                dropPacketProbability.value = y
-                println("dropPacketProbability.value: ${dropPacketProbability.value}")
+                packetDropRate.value = y
+                println("dropPacketProbability.value: ${packetDropRate.value}")
 
                 // sleep so we are not pinning a core
                 Thread.sleep(100)
