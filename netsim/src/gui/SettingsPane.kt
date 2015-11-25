@@ -14,7 +14,7 @@ internal class SettingsPane:GridPane()
 {
     val serverPort:IntegerProperty = SimpleIntegerProperty(0)
     val networkCapacity:IntegerProperty = SimpleIntegerProperty(0)
-    val packetDropFunction:DoubleProperty = SimpleDoubleProperty(0.0)
+    val packetDropFunction:IntegerProperty = SimpleIntegerProperty(0)
     val noise:DoubleProperty = SimpleDoubleProperty(0.0)
     val jitter:LongProperty = SimpleLongProperty(0)
     val latency:LongProperty = SimpleLongProperty(0)
@@ -108,7 +108,7 @@ internal class SettingsPane:GridPane()
             })
 
         // packetDropFunctionControl
-        val packetDropFunctionControl = SliderSetting(true)
+        val packetDropFunctionControl = SliderSetting(false)
         packetDropFunctionControl.label.text = PACKET_DROP_FUN_LABEL
         packetDropFunctionControl.slider.max = PACKET_DROP_FUN_MAX
         packetDropFunctionControl.slider.min = PACKET_DROP_FUN_MIN
@@ -116,7 +116,7 @@ internal class SettingsPane:GridPane()
         packetDropFunctionControl.slider.valueProperty().addListener(
             {
                 value,oldValue,newValue ->
-                packetDropFunction.value = newValue.toDouble()
+                packetDropFunction.value = Math.round(newValue.toFloat())
             })
 
         // noiseControl
