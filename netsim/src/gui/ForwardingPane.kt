@@ -1,5 +1,6 @@
 package gui
 
+import javafx.application.Platform
 import javafx.beans.InvalidationListener
 import javafx.geometry.Insets
 import javafx.scene.control.Label
@@ -78,7 +79,7 @@ internal class ForwardingPane:GridPane()
 
     private inner class ForwardingEntryObserver:ForwardingEntry.Observer
     {
-        override fun onDataChanged(observee:ForwardingEntry)
+        override fun onDataChanged(observee:ForwardingEntry,sockAddr1:InetSocketAddress?,sockAddr2:InetSocketAddress?)
         {
             synchronized(this,
                 {
@@ -88,9 +89,6 @@ internal class ForwardingPane:GridPane()
                     // address map if it is ok to do so
                     inetSockAddresses.remove(observee)
                         ?.forEach{inetSockAddressPairs.remove(it)}
-
-                    val sockAddr1 = observee.sockAddr1
-                    val sockAddr2 = observee.sockAddr2
 
                     // when there are valid address inputs, and they don't
                     // conflict with other entries, unset [observee.error], and
@@ -135,13 +133,7 @@ private class ForwardingEntry()
     val addr2:TextField = TextField()
     val port2:IntTextField = IntTextField(true)
 
-    var sockAddr1:InetSocketAddress? = null
-
-        private set
-
-    var sockAddr2:InetSocketAddress? = null
-
-        private set
+    var validationThread:Thread = Thread()
 
     var error:Boolean = false
 
@@ -190,31 +182,57 @@ private class ForwardingEntry()
 
     private fun validateAndNotify()
     {
-        try
-        {
-            sockAddr1 = null
-            sockAddr2 = null
-            if(addr1.text.isBlank() || addr2.text.isBlank()) throw IllegalArgumentException()
-            sockAddr1 = InetSocketAddress(addr1.text,Int.parse(port1.text))
-            sockAddr2 = InetSocketAddress(addr2.text,Int.parse(port2.text))
-        }
-        catch(ex:IllegalArgumentException)
-        {
-            // thrown by createUnresolved if the port parameter is outside the
-            // range of valid port values, or if the hostname parameter is null.
-        }
-        catch(ex:NumberFormatException)
-        {
-            // thrown by Int.parse..this should never be thrown anyway lel
-        }
-        finally
-        {
-            stateObserver?.onDataChanged(this)
-        }
+        // interrupt the previous thread so it will abort its callback operation
+        validationThread.interrupt()
+
+        // begin the validation on the validation thread
+        validationThread = Thread(
+            {
+                try
+                {
+                    // try to resolde addresses
+                    val sockAddr1 = InetSocketAddress(addr1.text,Int.parse(port1.text))
+                    val sockAddr2 = InetSocketAddress(addr2.text,Int.parse(port2.text))
+
+                    // if addresses were not resolved, input is invalid; throw
+                    if(sockAddr1.isUnresolved || sockAddr2.isUnresolved) throw IllegalArgumentException()
+
+                    // if the thread has been interrupted, throw interrupted exception
+                    if(Thread.interrupted()) throw InterruptedException()
+
+                    // set instance variable sock addresses
+                    Platform.runLater(
+                        {
+                            stateObserver?.onDataChanged(this,sockAddr1,sockAddr2)
+                        })
+                }
+                catch(ex:IllegalArgumentException)
+                {
+                    // thrown by createUnresolved if the port parameter is outside the
+                    // range of valid port values, or if the hostname parameter is null.
+                    Platform.runLater(
+                        {
+                            stateObserver?.onDataChanged(this,null,null)
+                        })
+                }
+                catch(ex:NumberFormatException)
+                {
+                    // thrown by Int.parse..thrown then text field is empty
+                    Platform.runLater(
+                        {
+                            stateObserver?.onDataChanged(this,null,null)
+                        })
+                }
+                catch(ex:InterruptedException)
+                {
+                    println("InterruptedException: ${ex.message}")
+                }
+            })
+        validationThread.start()
     }
 
     interface Observer
     {
-        fun onDataChanged(observee:ForwardingEntry);
+        fun onDataChanged(observee:ForwardingEntry,sockAddr1:InetSocketAddress?,sockAddr2:InetSocketAddress?);
     }
 }
