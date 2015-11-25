@@ -1,5 +1,6 @@
 package gui
 
+import javafx.application.Platform
 import javafx.geometry.HPos
 import javafx.geometry.Insets
 import javafx.scene.control.Label
@@ -25,9 +26,6 @@ internal class StatisticsPane:GridPane()
     private val BYTES_IN_FLIGHT_LABEL:String = "Bytes In Flight:"
     private val BYTES_IN_FLIGHT_DEFAULT:Double = 0.0
 
-    private val THROUGHPUT_LABEL:String = "Throughput:"
-    private val THROUGHPUT_DEFAULT:Double = 0.20
-
     private val PACKET_DROP_RATE_LABEL:String = "Packet Drop Rate:"
     private val PACKET_DROP_RATE_DEFAULT:Double = 0.0
 
@@ -37,15 +35,15 @@ internal class StatisticsPane:GridPane()
     private val packetsDeliveredDisplay = TextDisplay()
     private val packetsDroppedDisplay = TextDisplay()
     private val bytesInFlightDisplay = ProgressDisplay()
-    private val throughputDisplay = ProgressDisplay()
     private val packetDropRateDisplay = ProgressDisplay()
 
     var socketStatus:SocketStatus = SOCKET_STATUS_DEFAULT
 
         set(value)
         {
-            socketStatusDisplay.value.text = SOCKET_STATUS_DEFAULT.friendlyString
-            socketStatusDisplay.value.styleClass.add(SOCKET_STATUS_DEFAULT.css)
+            socketStatusDisplay.value.text = value.friendlyString
+            socketStatusDisplay.value.styleClass.remove(field.css)
+            socketStatusDisplay.value.styleClass.add(value.css)
             field = value
         }
 
@@ -53,7 +51,9 @@ internal class StatisticsPane:GridPane()
 
         set(value)
         {
-            packetsDeliveredDisplay.value.text = PACKETS_DELIVERED_DEFAULT.toString()
+            Platform.runLater {
+                packetsDeliveredDisplay.value.text = value.toString()
+            }
             field = value
         }
 
@@ -61,7 +61,9 @@ internal class StatisticsPane:GridPane()
 
         set(value)
         {
-            packetsDroppedDisplay.value.text = PACKETS_DROPPED_DEFAULT.toString()
+            Platform.runLater {
+                packetsDroppedDisplay.value.text = value.toString()
+            }
             field = value
         }
 
@@ -69,15 +71,9 @@ internal class StatisticsPane:GridPane()
 
         set(value)
         {
-            bytesInFlightDisplay.progressBar.progressProperty().value = BYTES_IN_FLIGHT_DEFAULT.toDouble()
-            field = value
-        }
-
-    var throughput:Double = THROUGHPUT_DEFAULT
-
-        set(value)
-        {
-            throughputDisplay.progressBar.progressProperty().value = THROUGHPUT_DEFAULT
+            Platform.runLater {
+                bytesInFlightDisplay.progressBar.progressProperty().value = value
+            }
             field = value
         }
 
@@ -85,7 +81,9 @@ internal class StatisticsPane:GridPane()
 
         set(value)
         {
-            packetDropRateDisplay.progressBar.progressProperty().value = THROUGHPUT_DEFAULT
+            Platform.runLater {
+                packetDropRateDisplay.progressBar.progressProperty().value = value
+            }
             field = value
         }
 
@@ -111,14 +109,12 @@ internal class StatisticsPane:GridPane()
         packetsDeliveredDisplay.label.text = PACKETS_DELIVERED_LABEL
         packetsDroppedDisplay.label.text = PACKETS_DROPPED_LABEL
         bytesInFlightDisplay.label.text = BYTES_IN_FLIGHT_LABEL
-        throughputDisplay.label.text = THROUGHPUT_LABEL
         packetDropRateDisplay.label.text = PACKET_DROP_RATE_LABEL
 
         add(socketStatusDisplay)
         add(packetsDeliveredDisplay)
         add(packetsDroppedDisplay)
         add(bytesInFlightDisplay)
-        add(throughputDisplay)
         add(packetDropRateDisplay)
     }
 

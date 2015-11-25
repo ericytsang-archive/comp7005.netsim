@@ -35,7 +35,7 @@ internal class SettingsPane:GridPane()
 
     private val PACKET_DROP_FUN_LABEL = "Packet Drop Function:"
     private val PACKET_DROP_FUN_MAX = 6.0
-    private val PACKET_DROP_FUN_MIN = 0.0
+    private val PACKET_DROP_FUN_MIN = 1.0
     private val PACKET_DROP_FUN_DEFAULT = 4.0
 
     private val NOISE_LABEL = "Noise:"

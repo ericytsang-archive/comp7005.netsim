@@ -17,6 +17,12 @@ class NetworkSimulator
     private val forwarder:Forwarder
     private val dropPacketProbabilityCalculator:Thread
 
+    val socketStatus = SimpleObjectProperty<SocketStatus>(SocketStatus.BIND_ERR)
+    val packetsDelivered = SimpleIntegerProperty(0)
+    val packetsDropped = SimpleIntegerProperty(0)
+    val bytesInFlight = SimpleIntegerProperty(0)
+    val packetDropRate = SimpleDoubleProperty(0.0)
+
     init
     {
         forwarder = Forwarder()
@@ -42,8 +48,16 @@ class NetworkSimulator
             if(!datagramSocket.isClosed) datagramSocket.close()
 
             // open the new socket on the specified port
-            receiver = Receiver(DatagramSocket(value))
-            datagramSocket = receiver!!.socket
+            try
+            {
+                receiver = Receiver(DatagramSocket(value))
+                datagramSocket = receiver!!.socket
+                socketStatus.value = SocketStatus.OPEN
+            }
+            catch(ex:Exception)
+            {
+                socketStatus.value = SocketStatus.BIND_ERR
+            }
 
             field = value
         }
@@ -68,16 +82,12 @@ class NetworkSimulator
     var packetDropFunction:Int = 0
     var noise:Double = 0.0
 
-    val socketStatus = SimpleObjectProperty<SocketStatus>(SocketStatus.BIND_ERR)
-    val packetsDelivered = SimpleIntegerProperty(0)
-    val packetsDropped = SimpleIntegerProperty(0)
-    val bytesInFlight = SimpleIntegerProperty(0)
-    val throughput = SimpleDoubleProperty(0.0)
-    val packetDropRate = SimpleDoubleProperty(0.0)
-
     private fun rollToDropPacket():Boolean
     {
-        return roll(packetDropRate.value)
+        val result = roll(packetDropRate.value)
+        if(result) packetsDropped.value++
+        else packetsDelivered.value++
+        return result
     }
 
     /**
@@ -140,7 +150,6 @@ class NetworkSimulator
                 y = Math.max(noise,y)
 
                 packetDropRate.value = y
-                println("dropPacketProbability.value: ${packetDropRate.value}")
 
                 // sleep so we are not pinning a core
                 Thread.sleep(100)
