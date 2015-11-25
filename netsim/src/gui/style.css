@@ -6,10 +6,10 @@
 
 .warning_text
 {
-    -fx-text-fill: salmon;
+    -fx-text-fill: "#F00";
 }
 
 .confirm_text
 {
-    -fx-text-fill: lightgreen;
+    -fx-text-fill: "#0A0";
 }
