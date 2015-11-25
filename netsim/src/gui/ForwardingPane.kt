@@ -129,8 +129,6 @@ private class ForwardingEntry()
     private val ADDR_PROMPT:String = "IP Address"
     private val PORT_PROMPT:String = "Port Number"
 
-    private val CSS_CLASS_WARNING:String = "warning"
-
     val addr1:TextField = TextField()
     val port1:IntTextField = IntTextField(true)
     val addr2:TextField = TextField()
@@ -152,17 +150,17 @@ private class ForwardingEntry()
             field = value
             if (field)
             {
-                addr1.styleClass.add(CSS_CLASS_WARNING)
-                port1.styleClass.add(CSS_CLASS_WARNING)
-                addr2.styleClass.add(CSS_CLASS_WARNING)
-                port2.styleClass.add(CSS_CLASS_WARNING)
+                addr1.styleClass.add(CSS.WARNING_CONTROL)
+                port1.styleClass.add(CSS.WARNING_CONTROL)
+                addr2.styleClass.add(CSS.WARNING_CONTROL)
+                port2.styleClass.add(CSS.WARNING_CONTROL)
             }
             else
             {
-                addr1.styleClass.remove(CSS_CLASS_WARNING)
-                port1.styleClass.remove(CSS_CLASS_WARNING)
-                addr2.styleClass.remove(CSS_CLASS_WARNING)
-                port2.styleClass.remove(CSS_CLASS_WARNING)
+                addr1.styleClass.remove(CSS.WARNING_CONTROL)
+                port1.styleClass.remove(CSS.WARNING_CONTROL)
+                addr2.styleClass.remove(CSS.WARNING_CONTROL)
+                port2.styleClass.remove(CSS.WARNING_CONTROL)
             }
         }
 

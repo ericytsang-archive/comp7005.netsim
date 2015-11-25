@@ -1,5 +1,15 @@
 
-.warning
+.warning_control
 {
     -fx-base: salmon;
+}
+
+.warning_text
+{
+    -fx-text-fill: salmon;
+}
+
+.confirm_text
+{
+    -fx-text-fill: lightgreen;
 }

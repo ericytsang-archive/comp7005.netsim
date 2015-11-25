@@ -16,6 +16,9 @@ internal class StatisticsPane:GridPane()
     private val PACKETS_DELIVERED_LABEL:String = "Packets Delivered:"
     private val PACKETS_DELIVERED_DEFAULT:Double = 0.0
 
+    private val SOCKET_STATUS_LABEL:String = "Socket Status:"
+    private val SOCKET_STATUS_DEFAULT:SocketStatus = SocketStatus.BIND_ERR
+
     private val PACKETS_DROPPED_LABEL:String = "Packets Dropped:"
     private val PACKETS_DROPPED_DEFAULT:Double = 0.0
 
@@ -53,6 +56,11 @@ internal class StatisticsPane:GridPane()
 
     private fun addChildNodes()
     {
+        val socketStatusDisplay = TextDisplay()
+        socketStatusDisplay.label.text = SOCKET_STATUS_LABEL
+        socketStatusDisplay.value.text = SOCKET_STATUS_DEFAULT.friendlyString
+        socketStatusDisplay.value.styleClass.add(SOCKET_STATUS_DEFAULT.css)
+
         val packetsDeliveredDisplay = TextDisplay()
         packetsDeliveredDisplay.label.text = PACKETS_DELIVERED_LABEL
         packetsDeliveredDisplay.value.text = PACKETS_DELIVERED_DEFAULT.toString()
@@ -69,6 +77,7 @@ internal class StatisticsPane:GridPane()
         throughputDisplay.label.text = THROUGHPUT_LABEL
         throughputDisplay.progressBar.progressProperty().value = THROUGHPUT_DEFAULT
 
+        add(socketStatusDisplay)
         add(packetsDeliveredDisplay)
         add(packetsDroppedDisplay)
         add(bytesInFlightDisplay)
@@ -88,6 +97,12 @@ internal class StatisticsPane:GridPane()
         add(newProgressDisplay.progressBar,COL_INDEX_CONTENT,nextRow)
         nextRow++
     }
+}
+
+enum class SocketStatus(val friendlyString:String,val css:String)
+{
+    OPEN("Running",CSS.CONFIRM_TEXT),
+    BIND_ERR("Binding Error",CSS.WARNING_TEXT)
 }
 
 private class TextDisplay()

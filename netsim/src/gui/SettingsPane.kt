@@ -1,6 +1,5 @@
 package gui
 
-import javafx.beans.InvalidationListener
 import javafx.beans.property.*
 import javafx.geometry.HPos
 import javafx.geometry.Insets

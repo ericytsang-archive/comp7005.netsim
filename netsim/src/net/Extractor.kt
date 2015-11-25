@@ -1,6 +1,6 @@
-import net.Buffer
+package net
 
-abstract class Extractor<Element>(val extractee:Buffer<Element>)
+abstract class Extractor<Extractee:Buffer<Element>,Element>(val extractee:Extractee)
 {
     private val worker:WorkerThread = WorkerThread()
 
@@ -9,13 +9,18 @@ abstract class Extractor<Element>(val extractee:Buffer<Element>)
         worker.start()
     }
 
-    abstract fun onExtract(extractedItem:Element):Unit
+    abstract fun onExtract(extractedItem:Element)
 
     private inner class WorkerThread:Thread()
     {
+        init
+        {
+            isDaemon = true
+        }
+
         override fun run():Unit
         {
-            while (true)
+            while(true)
             {
                 onExtract(extractee.get())
             }

@@ -1,25 +1,27 @@
 package gui
 
 import javafx.application.Application
+import javafx.beans.InvalidationListener
 import javafx.scene.Scene
 import javafx.scene.control.ScrollPane
-import javafx.scene.layout.Border
 import javafx.scene.layout.BorderPane
-import javafx.scene.layout.BorderStroke
-import javafx.scene.layout.BorderStrokeStyle
-import javafx.scene.layout.BorderWidths
 import javafx.scene.layout.ColumnConstraints
-import javafx.scene.layout.CornerRadii
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
-import javafx.scene.paint.Paint
 import javafx.stage.Stage
+import net.NetworkSimulator
 
 class Window:Application()
 {
     private val WINDOW_TITLE = "Window Title"
     private val WINDOW_WIDTH = 725
     private val WINDOW_HEIGHT = 480
+
+    private val forwardingPane:ForwardingPane = ForwardingPane()
+    private val settingsPane:SettingsPane = SettingsPane()
+    private val statisticsPane:StatisticsPane = StatisticsPane()
+
+    private val netsim:NetworkSimulator = NetworkSimulator()
 
     override fun start(primaryStage:Stage)
     {
@@ -30,6 +32,32 @@ class Window:Application()
         primaryStage.scene = Scene(ContentPane(),WINDOW_WIDTH.toDouble(),WINDOW_HEIGHT.toDouble())
         primaryStage.scene.stylesheets.add("./gui/style.css")
         primaryStage.show()
+
+        // bind setting pane properties to modify network simulator values
+        settingsPane.jitter.addListener(InvalidationListener
+            {
+                netsim.jitter = settingsPane.jitter.value
+            })
+        settingsPane.latency.addListener(InvalidationListener
+            {
+                netsim.latency = settingsPane.latency.value
+            })
+        settingsPane.networkCapacity.addListener(InvalidationListener
+            {
+                netsim.capacity = settingsPane.networkCapacity.value
+            })
+        settingsPane.noise.addListener(InvalidationListener
+            {
+                netsim.noise = settingsPane.noise.value
+            })
+        settingsPane.packetDropFunction.addListener(InvalidationListener
+            {
+                netsim.packetDropFunction = settingsPane.packetDropFunction.value
+            })
+        settingsPane.serverPort.addListener(InvalidationListener
+            {
+                netsim.port = settingsPane.serverPort.value
+            })
     }
 
     private inner class ContentPane:BorderPane()
@@ -38,7 +66,7 @@ class Window:Application()
         {
             // ForwardingPane
             val scrollPane = ScrollPane()
-            scrollPane.content = ForwardingPane()
+            scrollPane.content = forwardingPane
 
             // SettingsPane, StatisticsPane
             val bottomGrid = GridPane()
@@ -50,8 +78,8 @@ class Window:Application()
             bottomGrid.columnConstraints.add(constraints)
             bottomGrid.columnConstraints.add(constraints)
 
-            bottomGrid.add(SettingsPane(),0,0)
-            bottomGrid.add(StatisticsPane(),1,0)
+            bottomGrid.add(settingsPane,0,0)
+            bottomGrid.add(statisticsPane,1,0)
 
             center = scrollPane
             bottom = bottomGrid
