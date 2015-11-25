@@ -111,7 +111,6 @@ class Window:Application()
 
             // SettingsPane, StatisticsPane
             val bottomGrid = GridPane()
-            bottomGrid.isGridLinesVisible = true
 
             val constraints = ColumnConstraints()
             constraints.isFillWidth = true
