@@ -16,7 +16,7 @@ object NetUtils
     val MAX_PORT:Int = 0xFFFF
 
     /**
-     * maximum length of a [DatagramPacket]'s payload in bytes.
+     * maximum length of a UDP datagram's payload in bytes.
      */
     val MAX_UDP_PACKET_LEN = 65507
 }

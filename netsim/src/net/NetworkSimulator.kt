@@ -1,6 +1,5 @@
 package net
 
-import gui.SocketStatus
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -19,11 +18,12 @@ import java.net.InetSocketAddress
  * [packetsDropped], [bytesInFlight] and [packetDropRate].
  *
  * this [NetworkSimulator] will read [DatagramPacket]s from the [datagramSocket]
- * listening on port [port]. received [DatagramPacket]s will remain in the
- * [delayQueueBuffer] for [latency] milliseconds, and an additional random
- * fraction of [jitter] milliseconds before being forwarded to the mapped
- * [InetSocketAddress] determined by the [routingTable] which maps source
- * [InetSocketAddress]es to destination [InetSocketAddress]es.
+ * listening on port [port]. received [DatagramPacket]s have a probability of
+ * being dropped as a function of [noise] and [packetDropFunction]. remaining
+ * packets will be put into the [delayQueueBuffer] for [latency] milliseconds,
+ * and an additional random fraction of [jitter] milliseconds before being
+ * forwarded to the mapped [InetSocketAddress] determined by the [routingTable]
+ * which maps source [InetSocketAddress]es to destination [InetSocketAddress]es.
  */
 class NetworkSimulator
 {

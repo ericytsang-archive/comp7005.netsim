@@ -4,6 +4,13 @@ import java.util.concurrent.DelayQueue
 import java.util.concurrent.Delayed
 import java.util.concurrent.TimeUnit
 
+/**
+ * wraps a [DelayQueue]. [Element]s are put into the [delayQueue] with [put].
+ * [Element]s are removed from the [delayQueue] with [get].
+ * [Element]s may only be removed with [get] once it has spent [baseDelay]
+ * milliseconds plus a random fraction of [delayNoise] milliseconds in the
+ * [delayQueue].
+ */
 class DelayQueueBuffer<Element>:Buffer<Element>
 {
     /**

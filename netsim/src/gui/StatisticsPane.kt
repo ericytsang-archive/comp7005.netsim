@@ -8,6 +8,7 @@ import javafx.scene.control.ProgressBar
 import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
+import net.SocketStatus
 
 internal class StatisticsPane:GridPane()
 {
@@ -147,12 +148,6 @@ internal class StatisticsPane:GridPane()
         add(newProgressDisplay.progressBar,COL_INDEX_CONTENT,nextRow)
         nextRow++
     }
-}
-
-enum class SocketStatus(val friendlyString:String,val css:String)
-{
-    OPEN("Running",CSS.CONFIRM_TEXT),
-    BIND_ERR("Binding Error",CSS.WARNING_TEXT)
 }
 
 private class TextDisplay()
