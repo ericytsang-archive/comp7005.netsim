@@ -2,12 +2,11 @@ package net;
 
 import java.net.DatagramPacket
 import java.net.DatagramSocket
-import java.net.SocketException
 
 /**
  * wraps a [DatagramSocket] with the [Buffer] interface
  */
-class SocketBuffer(val socket:DatagramSocket):Buffer<DatagramPacket>
+internal class SocketBuffer(val socket:DatagramSocket):Buffer<DatagramPacket>
 {
     /**
      * sends the [element] out the [socket].

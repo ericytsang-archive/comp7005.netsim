@@ -7,7 +7,7 @@ package net
  *
  * @param extractee Buffer object to extract data from.
  */
-abstract class Extractor<Extractee:Buffer<Element>,Element>(val extractee:Extractee)
+internal abstract class Extractor<Extractee:Buffer<Element>,Element>(val extractee:Extractee)
 {
     /**
      * thread that extracts data from [extractee].

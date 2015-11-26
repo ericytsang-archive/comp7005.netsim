@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
  * milliseconds plus a random fraction of [delayNoise] milliseconds in the
  * [delayQueue].
  */
-class DelayQueueBuffer<Element>:Buffer<Element>
+internal class DelayQueueBuffer<Element>:Buffer<Element>
 {
     /**
      * the delay queue that elements are actually put into and extracted from.

@@ -4,7 +4,7 @@ package net;
  * represents a data structure where elements may be [put] into it for
  * processing (if any), and later removed with [get] once processed.
  */
-interface Buffer<Element>
+internal interface Buffer<Element>
 {
     /**
      * places an [Element] into this [Buffer] for processing (if any).
