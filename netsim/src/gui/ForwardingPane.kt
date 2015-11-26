@@ -81,45 +81,44 @@ internal class ForwardingPane:GridPane()
     {
         override fun onDataChanged(observee:ForwardingEntry,sockAddr1:InetSocketAddress?,sockAddr2:InetSocketAddress?)
         {
-            synchronized(this,
+            synchronized(this,{
+                // find all associated address entries previously related to
+                // this input, and remove them from the address map...later,
+                // we will add the addresses from the observee to the
+                // address map if it is ok to do so
+                inetSockAddresses.remove(observee)
+                    ?.forEach {inetSockAddressPairs.remove(it)}
+
+                // when there are valid address inputs, and they don't
+                // conflict with other entries, unset [observee.error], and
+                // add the address entries to the address map
+                if (sockAddr1 != null && sockAddr2 != null
+                    && !sockAddr1.equals(sockAddr2)
+                    && !inetSockAddressPairs.containsKey(sockAddr1)
+                    && !inetSockAddressPairs.containsKey(sockAddr2))
                 {
-                    // find all associated address entries previously related to
-                    // this input, and remove them from the address map...later,
-                    // we will add the addresses from the observee to the
-                    // address map if it is ok to do so
-                    inetSockAddresses.remove(observee)
-                        ?.forEach{inetSockAddressPairs.remove(it)}
+                    observee.error = false
+                    inetSockAddressPairs.put(sockAddr1,sockAddr2)
+                    inetSockAddressPairs.put(sockAddr2,sockAddr1)
+                    inetSockAddresses.getOrPut(observee,{LinkedHashSet()})
+                        .addAll(arrayOf(sockAddr1,sockAddr2))
+                }
 
-                    // when there are valid address inputs, and they don't
-                    // conflict with other entries, unset [observee.error], and
-                    // add the address entries to the address map
-                    if (sockAddr1 != null && sockAddr2 != null
-                        && !sockAddr1.equals(sockAddr2)
-                        && !inetSockAddressPairs.containsKey(sockAddr1)
-                        && !inetSockAddressPairs.containsKey(sockAddr2))
-                    {
-                        observee.error = false
-                        inetSockAddressPairs.put(sockAddr1,sockAddr2)
-                        inetSockAddressPairs.put(sockAddr2,sockAddr1)
-                        inetSockAddresses.getOrPut(observee,{LinkedHashSet()})
-                            .addAll(arrayOf(sockAddr1,sockAddr2))
-                    }
+                // when inputs are invalid, set [observee.error]
+                else
+                {
+                    observee.error = true
+                }
 
-                    // when inputs are invalid, set [observee.error]
-                    else
-                    {
-                        observee.error = true
-                    }
-
-                    // if there are no text in any of the text fields, remove it
-                    removeAll()
-                    forwardingEntries.filter({it.addr1.length == 0
-                        && it.port1.length == 0 && it.addr2.length == 0
-                        && it.port2.length == 0})
-                        .forEach{forwardingEntries.remove(it)}
-                    forwardingEntries.forEach { add(it) }
-                    add(ForwardingEntry())
-                })
+                // if there are no text in any of the text fields, remove it
+                removeAll()
+                forwardingEntries.filter({it.addr1.length == 0
+                    && it.port1.length == 0 && it.addr2.length == 0
+                    && it.port2.length == 0})
+                    .forEach{forwardingEntries.remove(it)}
+                forwardingEntries.forEach {add(it)}
+                add(ForwardingEntry())
+            })
         }
     }
 }
@@ -134,7 +133,10 @@ private class ForwardingEntry()
     val addr2:TextField = TextField()
     val port2:IntTextField = IntTextField(true)
 
-    var validationThread:Thread = Thread()
+    var validationThread:ValidationThread = ValidationThread()
+
+    // todo: remove this after debugging is complete
+    var seqNum:Int = 0
 
     var error:Boolean = false
 
@@ -186,51 +188,10 @@ private class ForwardingEntry()
         // todo: we want subsequently created threads to have the final say, even if they finish faster then prior threads...this doesnt seem to be happening...plz fix
         synchronized(this,{
             // interrupt the previous thread so it will abort its callback operation
-            validationThread.interrupt()
+            validationThread.interrupt = true
 
             // begin the validation on the validation thread
-            validationThread = Thread({
-                try
-                {
-                    // try to resolde addresses
-                    val sockAddr1 = InetSocketAddress(addr1.text,Int.parse(port1.text))
-                    val sockAddr2 = InetSocketAddress(addr2.text,Int.parse(port2.text))
-
-                    // if the thread has been interrupted, throw interrupted exception
-                    if (Thread.interrupted()) throw InterruptedException()
-
-                    // if addresses were not resolved, input is invalid; throw
-                    if (sockAddr1.isUnresolved || sockAddr2.isUnresolved)
-                        throw IllegalArgumentException()
-
-                    // set instance variable sock addresses
-                    Platform.runLater(
-                        {
-                            stateObserver?.onDataChanged(this,sockAddr1,sockAddr2)
-                        })
-                }
-                catch(ex:IllegalArgumentException)
-                {
-                    // thrown by createUnresolved if the port parameter is outside the
-                    // range of valid port values, or if the hostname parameter is null.
-                    Platform.runLater(
-                        {
-                            stateObserver?.onDataChanged(this,null,null)
-                        })
-                }
-                catch(ex:NumberFormatException)
-                {
-                    // thrown by Int.parse..thrown then text field is empty
-                    Platform.runLater(
-                        {
-                            stateObserver?.onDataChanged(this,null,null)
-                        })
-                }
-                catch(ex:InterruptedException)
-                {
-                    println("InterruptedException")
-                }
-            })
+            validationThread = ValidationThread()
             validationThread.start()
         })
     }
@@ -238,5 +199,62 @@ private class ForwardingEntry()
     interface Observer
     {
         fun onDataChanged(observee:ForwardingEntry,sockAddr1:InetSocketAddress?,sockAddr2:InetSocketAddress?);
+    }
+
+    private inner class ValidationThread:Thread()
+    {
+        var interrupt:Boolean = false
+
+        override fun run()
+        {
+            try
+            {
+
+                // if inputs are blank, input is invalid; throw
+                if(addr1.text.isBlank() || addr2.text.isBlank())
+                    throw IllegalArgumentException()
+
+                // try to resolve addresses
+                val sockAddr1 = InetSocketAddress(addr1.text,Int.parse(port1.text))
+                val sockAddr2 = InetSocketAddress(addr2.text,Int.parse(port2.text))
+
+                // if addresses were not resolved, input is invalid; throw
+                if (sockAddr1.isUnresolved || sockAddr2.isUnresolved)
+                    throw IllegalArgumentException()
+
+                // set instance variable sock addresses
+                Platform.runLater({
+                    if(!interrupt)
+                    {
+                        stateObserver?.onDataChanged(this@ForwardingEntry,sockAddr1,sockAddr2)
+                    }
+                })
+            }
+            catch(ex:Exception)
+            {
+                when
+                {
+
+                // IllegalArgumentException: thrown by createUnresolved if the
+                // port parameter is outside the range of valid port values,
+                // or if the hostname parameter is null.
+                //
+                // NumberFormatException: thrown by Int.parse..thrown then text
+                // field is empty
+                    ex is IllegalArgumentException || ex is NumberFormatException ->
+                    {
+                        Platform.runLater({
+                            if(!interrupt)
+                            {
+                                stateObserver?.onDataChanged(this@ForwardingEntry,null,null)
+                            }
+                        })
+                    }
+
+                // propagate unhandled exceptions
+                    else -> throw ex
+                }
+            }
+        }
     }
 }
