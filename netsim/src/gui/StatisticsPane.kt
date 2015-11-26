@@ -16,22 +16,11 @@ internal class StatisticsPane:GridPane()
     private val COL_INDEX_CONTENT:Int = 1
 
     private val SOCKET_STATUS_LABEL:String = "Socket Status:"
-    private val SOCKET_STATUS_DEFAULT:SocketStatus = SocketStatus.BIND_ERR
-
     private val PACKETS_DELIVERED_LABEL:String = "Packets Delivered:"
-    private val PACKETS_DELIVERED_DEFAULT:Int = 0
-
     private val PACKETS_DROPPED_LABEL:String = "Packets Dropped:"
-    private val PACKETS_DROPPED_DEFAULT:Int = 0
-
     private val BYTES_IN_FLIGHT_LABEL:String = "Bytes In Flight:"
-    private val BYTES_IN_FLIGHT_DEFAULT:Int = 0
-
     private val NETWORK_USAGE_LABEL:String = "Network Usage:"
-    private val NETWORK_USAGE_DEFAULT:Double = 0.0
-
     private val PACKET_DROP_RATE_LABEL:String = "Packet Drop Rate:"
-    private val PACKET_DROP_RATE_DEFAULT:Double = 0.0
 
     private var nextRow:Int = 0
 
@@ -42,7 +31,7 @@ internal class StatisticsPane:GridPane()
     private val networkUsageDisplay = ProgressDisplay()
     private val packetDropRateDisplay = ProgressDisplay()
 
-    var socketStatus:SocketStatus = SOCKET_STATUS_DEFAULT
+    var socketStatus:SocketStatus = SocketStatus.OPEN
 
         set(value)
         {
@@ -52,7 +41,7 @@ internal class StatisticsPane:GridPane()
             field = value
         }
 
-    var packetsDelivered:Int = PACKETS_DELIVERED_DEFAULT
+    var packetsDelivered:Int = 0
 
         set(value)
         {
@@ -62,7 +51,7 @@ internal class StatisticsPane:GridPane()
             field = value
         }
 
-    var packetsDropped:Int = PACKETS_DROPPED_DEFAULT
+    var packetsDropped:Int = 0
 
         set(value)
         {
@@ -72,7 +61,7 @@ internal class StatisticsPane:GridPane()
             field = value
         }
 
-    var bytesInFlight:Int = BYTES_IN_FLIGHT_DEFAULT
+    var bytesInFlight:Int = 0
 
         set(value)
         {
@@ -82,7 +71,7 @@ internal class StatisticsPane:GridPane()
             field = value
         }
 
-    var networkUsage:Double = NETWORK_USAGE_DEFAULT
+    var networkUsage:Double = 0.0
 
         set(value)
         {
@@ -92,7 +81,7 @@ internal class StatisticsPane:GridPane()
             field = value
         }
 
-    var packetDropRate:Double = PACKET_DROP_RATE_DEFAULT
+    var packetDropRate:Double = 0.0
 
         set(value)
         {
@@ -148,16 +137,12 @@ internal class StatisticsPane:GridPane()
         add(newProgressDisplay.progressBar,COL_INDEX_CONTENT,nextRow)
         nextRow++
     }
-}
 
-private class TextDisplay()
-{
-    val label:Label = Label()
-    val value:Label = Label()
-}
+    private class TextDisplay(
+        val label:Label = Label(),
+        val value:Label = Label())
 
-private class ProgressDisplay()
-{
-    val label:Label = Label()
-    val progressBar:ProgressBar = ProgressBar()
+    private class ProgressDisplay(
+        val label:Label = Label(),
+        val progressBar:ProgressBar = ProgressBar())
 }

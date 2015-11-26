@@ -120,135 +120,134 @@ internal class ForwardingPane:GridPane()
             })
         }
     }
-}
 
-private class ForwardingEntry()
-{
-    private val ADDR_PROMPT:String = "IP Address"
-    private val PORT_PROMPT:String = "Port Number"
+    private class ForwardingEntry()
+    {
+        private val ADDR_PROMPT:String = "IP Address"
+        private val PORT_PROMPT:String = "Port Number"
 
-    val addr1:TextField = TextField()
-    val port1:IntTextField = IntTextField(true)
-    val addr2:TextField = TextField()
-    val port2:IntTextField = IntTextField(true)
+        val addr1:TextField = TextField()
+        val port1:IntTextField = IntTextField(true)
+        val addr2:TextField = TextField()
+        val port2:IntTextField = IntTextField(true)
 
-    var validationThread:ValidationThread = ValidationThread()
+        var validationThread:ValidationThread = ValidationThread()
 
-    var error:Boolean = false
+        var error:Boolean = false
 
-        set(value)
+            set(value)
+            {
+                if (field == value) return
+                field = value
+                if (field)
+                {
+                    addr1.styleClass.add(CSS.WARNING_CONTROL)
+                    port1.styleClass.add(CSS.WARNING_CONTROL)
+                    addr2.styleClass.add(CSS.WARNING_CONTROL)
+                    port2.styleClass.add(CSS.WARNING_CONTROL)
+                }
+                else
+                {
+                    addr1.styleClass.remove(CSS.WARNING_CONTROL)
+                    port1.styleClass.remove(CSS.WARNING_CONTROL)
+                    addr2.styleClass.remove(CSS.WARNING_CONTROL)
+                    port2.styleClass.remove(CSS.WARNING_CONTROL)
+                }
+            }
+
+        var stateObserver:ForwardingEntry.Observer? = null
+
+        init
         {
-            if (field == value) return
-            field = value
-            if (field)
-            {
-                addr1.styleClass.add(CSS.WARNING_CONTROL)
-                port1.styleClass.add(CSS.WARNING_CONTROL)
-                addr2.styleClass.add(CSS.WARNING_CONTROL)
-                port2.styleClass.add(CSS.WARNING_CONTROL)
-            }
-            else
-            {
-                addr1.styleClass.remove(CSS.WARNING_CONTROL)
-                port1.styleClass.remove(CSS.WARNING_CONTROL)
-                addr2.styleClass.remove(CSS.WARNING_CONTROL)
-                port2.styleClass.remove(CSS.WARNING_CONTROL)
-            }
+            // set on action code
+            addr1.textProperty().addListener(InvalidationListener{validateAndNotify()})
+            port1.textProperty().addListener(InvalidationListener{validateAndNotify()})
+            addr2.textProperty().addListener(InvalidationListener{validateAndNotify()})
+            port2.textProperty().addListener(InvalidationListener{validateAndNotify()})
+
+            // add prompt text to text fields
+            addr1.promptText = ADDR_PROMPT
+            port1.promptText = PORT_PROMPT
+            addr2.promptText = ADDR_PROMPT
+            port2.promptText = PORT_PROMPT
+
+            // configure mins and maxs of port text fields
+            port1.min = NetUtils.MIN_PORT
+            port1.max = NetUtils.MAX_PORT
+            port2.min = NetUtils.MIN_PORT
+            port2.max = NetUtils.MAX_PORT
         }
 
-    var stateObserver:ForwardingEntry.Observer? = null
-
-    init
-    {
-        // set on action code
-        addr1.textProperty().addListener(InvalidationListener{validateAndNotify()})
-        port1.textProperty().addListener(InvalidationListener{validateAndNotify()})
-        addr2.textProperty().addListener(InvalidationListener{validateAndNotify()})
-        port2.textProperty().addListener(InvalidationListener{validateAndNotify()})
-
-        // add prompt text to text fields
-        addr1.promptText = ADDR_PROMPT
-        port1.promptText = PORT_PROMPT
-        addr2.promptText = ADDR_PROMPT
-        port2.promptText = PORT_PROMPT
-
-        // configure mins and maxs of port text fields
-        port1.min = NetUtils.MIN_PORT
-        port1.max = NetUtils.MAX_PORT
-        port2.min = NetUtils.MIN_PORT
-        port2.max = NetUtils.MAX_PORT
-    }
-
-    private fun validateAndNotify()
-    {
-        // todo: we want subsequently created threads to have the final say, even if they finish faster then prior threads...this doesnt seem to be happening...plz fix
-        synchronized(this,{
-            // interrupt the previous thread so it will abort its callback operation
-            validationThread.interrupt = true
-
-            // begin the validation on the validation thread
-            validationThread = ValidationThread()
-            validationThread.start()
-        })
-    }
-
-    interface Observer
-    {
-        fun onDataChanged(observee:ForwardingEntry,sockAddr1:InetSocketAddress?,sockAddr2:InetSocketAddress?);
-    }
-
-    private inner class ValidationThread:Thread()
-    {
-        var interrupt:Boolean = false
-
-        override fun run()
+        private fun validateAndNotify()
         {
-            try
+            synchronized(this,{
+                // interrupt the previous thread so it will abort its callback operation
+                validationThread.interrupt = true
+
+                // begin the validation on the validation thread
+                validationThread = ValidationThread()
+                validationThread.start()
+            })
+        }
+
+        interface Observer
+        {
+            fun onDataChanged(observee:ForwardingEntry,sockAddr1:InetSocketAddress?,sockAddr2:InetSocketAddress?);
+        }
+
+        private inner class ValidationThread:Thread()
+        {
+            var interrupt:Boolean = false
+
+            override fun run()
             {
-
-                // if inputs are blank, input is invalid; throw
-                if(addr1.text.isBlank() || addr2.text.isBlank())
-                    throw IllegalArgumentException()
-
-                // try to resolve addresses
-                val sockAddr1 = InetSocketAddress(addr1.text,Int.parse(port1.text))
-                val sockAddr2 = InetSocketAddress(addr2.text,Int.parse(port2.text))
-
-                // if addresses were not resolved, input is invalid; throw
-                if (sockAddr1.isUnresolved || sockAddr2.isUnresolved)
-                    throw IllegalArgumentException()
-
-                // set instance variable sock addresses
-                Platform.runLater({
-                    if(!interrupt)
-                    {
-                        stateObserver?.onDataChanged(this@ForwardingEntry,sockAddr1,sockAddr2)
-                    }
-                })
-            }
-            catch(ex:Exception)
-            {
-                when
+                try
                 {
 
-                // IllegalArgumentException: thrown by createUnresolved if the
-                // port parameter is outside the range of valid port values,
-                // or if the hostname parameter is null.
-                //
-                // NumberFormatException: thrown by Int.parse..thrown then text
-                // field is empty
-                    ex is IllegalArgumentException || ex is NumberFormatException ->
-                    {
-                        Platform.runLater({
-                            if(!interrupt)
-                            {
-                                stateObserver?.onDataChanged(this@ForwardingEntry,null,null)
-                            }
-                        })
-                    }
+                    // if inputs are blank, input is invalid; throw
+                    if(addr1.text.isBlank() || addr2.text.isBlank())
+                        throw IllegalArgumentException()
 
-                // propagate unhandled exceptions
-                    else -> throw ex
+                    // try to resolve addresses
+                    val sockAddr1 = InetSocketAddress(addr1.text,Int.parse(port1.text))
+                    val sockAddr2 = InetSocketAddress(addr2.text,Int.parse(port2.text))
+
+                    // if addresses were not resolved, input is invalid; throw
+                    if (sockAddr1.isUnresolved || sockAddr2.isUnresolved)
+                        throw IllegalArgumentException()
+
+                    // set instance variable sock addresses
+                    Platform.runLater({
+                        if(!interrupt)
+                        {
+                            stateObserver?.onDataChanged(this@ForwardingEntry,sockAddr1,sockAddr2)
+                        }
+                    })
+                }
+                catch(ex:Exception)
+                {
+                    when
+                    {
+
+                    // IllegalArgumentException: thrown by createUnresolved if the
+                    // port parameter is outside the range of valid port values,
+                    // or if the hostname parameter is null.
+                    //
+                    // NumberFormatException: thrown by Int.parse..thrown then text
+                    // field is empty
+                        ex is IllegalArgumentException || ex is NumberFormatException ->
+                        {
+                            Platform.runLater({
+                                if(!interrupt)
+                                {
+                                    stateObserver?.onDataChanged(this@ForwardingEntry,null,null)
+                                }
+                            })
+                        }
+
+                    // propagate unhandled exceptions
+                        else -> throw ex
+                    }
                 }
             }
         }

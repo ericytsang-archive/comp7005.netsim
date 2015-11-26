@@ -85,7 +85,7 @@ internal class SettingsPane:GridPane()
     private fun addChildNodes()
     {
         // serverPortControl
-        val serverPortControl = SliderSetting(false)
+        val serverPortControl = ClampedSetting(false)
         serverPortControl.slider.valueProperty().addListener(
             {
                 value,oldValue,newValue ->
@@ -97,7 +97,7 @@ internal class SettingsPane:GridPane()
         serverPortControl.slider.value = SERVER_PORT_DEFAULT
 
         // packetDropFunctionControl
-        val networkCapacityControl = SliderSetting(false)
+        val networkCapacityControl = ClampedSetting(false)
         networkCapacityControl.slider.valueProperty().addListener(
             {
                 value,oldValue,newValue ->
@@ -109,7 +109,7 @@ internal class SettingsPane:GridPane()
         networkCapacityControl.slider.value = NETWORK_CAPACITY_DEFAULT
 
         // packetDropFunctionControl
-        val packetDropFunctionControl = SliderSetting(false)
+        val packetDropFunctionControl = ClampedSetting(false)
         packetDropFunctionControl.slider.valueProperty().addListener(
             {
                 value,oldValue,newValue ->
@@ -121,7 +121,7 @@ internal class SettingsPane:GridPane()
         packetDropFunctionControl.slider.value = PACKET_DROP_FUN_DEFAULT
 
         // noiseControl
-        val noiseControl = SliderSetting(true)
+        val noiseControl = ClampedSetting(true)
         noiseControl.slider.valueProperty().addListener(
             {
                 value,oldValue,newValue ->
@@ -133,7 +133,7 @@ internal class SettingsPane:GridPane()
         noiseControl.slider.value = NOISE_DEFAULT
 
         // latencyControl
-        val latencyControl = SliderSetting(false)
+        val latencyControl = ClampedSetting(false)
         latencyControl.slider.valueProperty().addListener(
             {
                 value,oldValue,newValue ->
@@ -145,7 +145,7 @@ internal class SettingsPane:GridPane()
         latencyControl.slider.value = LATENCY_DEFAULT
 
         // jitterControl
-        val jitterControl = SliderSetting(false)
+        val jitterControl = ClampedSetting(false)
         jitterControl.slider.valueProperty().addListener(
             {
                 value,oldValue,newValue ->
@@ -165,46 +165,46 @@ internal class SettingsPane:GridPane()
         addSliderSetting(jitterControl)
     }
 
-    private fun addSliderSetting(newSliderSetting:SliderSetting)
+    private fun addSliderSetting(newClampedSetting:ClampedSetting)
     {
-        add(newSliderSetting.label,COL_INDEX_LABEL,nextRow)
-        add(newSliderSetting.doubleTextField,COL_INDEX_TEXTFIELD,nextRow)
-        add(newSliderSetting.slider,COL_INDEX_SLIDER,nextRow)
+        add(newClampedSetting.label,COL_INDEX_LABEL,nextRow)
+        add(newClampedSetting.doubleTextField,COL_INDEX_TEXTFIELD,nextRow)
+        add(newClampedSetting.slider,COL_INDEX_SLIDER,nextRow)
         nextRow++
     }
 
-    private fun addNumberTextFieldSetting(newSliderSetting:SliderSetting)
+    private fun addNumberTextFieldSetting(newClampedSetting:ClampedSetting)
     {
-        add(newSliderSetting.label,COL_INDEX_LABEL,nextRow)
-        add(newSliderSetting.doubleTextField,COL_INDEX_TEXTFIELD,nextRow)
+        add(newClampedSetting.label,COL_INDEX_LABEL,nextRow)
+        add(newClampedSetting.doubleTextField,COL_INDEX_TEXTFIELD,nextRow)
         nextRow++
     }
-}
 
-private class SliderSetting(private val allowDecimalNumbers:Boolean)
-{
-    val label:Label = Label()
-    var doubleTextField:DoubleTextField = DoubleTextField()
-    var slider:Slider = Slider()
-
-    init
+    private class ClampedSetting(private val allowDecimalNumbers:Boolean)
     {
-        // configure numberTextField so when its value changes, it updates slider
-        doubleTextField.textProperty().addListener(
-            {
-                value,oldValue,newValue ->
-                slider.value = Double.parse(newValue)
-                doubleTextField.text =
-                    if (allowDecimalNumbers) slider.value.toString()
-                    else Math.round(slider.value).toString()
-            })
+        val label:Label = Label()
+        var doubleTextField:DoubleTextField = DoubleTextField()
+        var slider:Slider = Slider()
 
-        // configure slider so when its value changes, it updates numberTextField
-        slider.maxWidth = java.lang.Double.MAX_VALUE
-        slider.valueProperty().addListener(
-            {
-                value,oldValue,newValue ->
-                doubleTextField.text = newValue.toString()
-            })
+        init
+        {
+            // configure numberTextField so when its value changes, it updates slider
+            doubleTextField.textProperty().addListener(
+                {
+                    value,oldValue,newValue ->
+                    slider.value = Double.parse(newValue)
+                    doubleTextField.text =
+                        if (allowDecimalNumbers) slider.value.toString()
+                        else Math.round(slider.value).toString()
+                })
+
+            // configure slider so when its value changes, it updates numberTextField
+            slider.maxWidth = java.lang.Double.MAX_VALUE
+            slider.valueProperty().addListener(
+                {
+                    value,oldValue,newValue ->
+                    doubleTextField.text = newValue.toString()
+                })
+        }
     }
 }
