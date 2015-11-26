@@ -74,7 +74,8 @@ class Window:Application()
         // hook up the network simulator to the statistics pane
         netsim.bytesInFlight.addListener(InvalidationListener
             {
-                statisticsPane.bytesInFlight = netsim.bytesInFlight.value.toDouble()/netsim.capacity.toDouble()
+                statisticsPane.bytesInFlight = netsim.bytesInFlight.value
+                statisticsPane.networkUsage = netsim.bytesInFlight.value.toDouble()/netsim.capacity.toDouble()
             })
         netsim.packetDropRate.addListener(InvalidationListener
             {
@@ -94,7 +95,8 @@ class Window:Application()
             })
 
         // initialize every one of the statistics pane's values to the netsim's defaults
-        statisticsPane.bytesInFlight = netsim.bytesInFlight.value.toDouble()/netsim.capacity.toDouble()
+        statisticsPane.bytesInFlight = netsim.bytesInFlight.value
+        statisticsPane.networkUsage = netsim.bytesInFlight.value.toDouble()/netsim.capacity.toDouble()
         statisticsPane.packetDropRate = netsim.packetDropRate.value
         statisticsPane.packetsDelivered = netsim.packetsDelivered.value
         statisticsPane.packetsDropped = netsim.packetsDropped.value

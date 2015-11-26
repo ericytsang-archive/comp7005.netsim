@@ -207,9 +207,4 @@ private class SliderSetting(private val allowDecimalNumbers:Boolean)
                 doubleTextField.text = newValue.toString()
             })
     }
-
-    fun valueProperty():DoubleProperty
-    {
-        return slider.valueProperty()
-    }
 }

@@ -6,8 +6,8 @@ import javafx.geometry.Insets
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
 import javafx.scene.layout.*
+import net.NetUtils
 import parse
-import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.util.*
 
@@ -93,7 +93,6 @@ internal class ForwardingPane:GridPane()
                 // conflict with other entries, unset [observee.error], and
                 // add the address entries to the address map
                 if (sockAddr1 != null && sockAddr2 != null
-                    && !sockAddr1.equals(sockAddr2)
                     && !inetSockAddressPairs.containsKey(sockAddr1)
                     && !inetSockAddressPairs.containsKey(sockAddr2))
                 {
@@ -134,9 +133,6 @@ private class ForwardingEntry()
     val port2:IntTextField = IntTextField(true)
 
     var validationThread:ValidationThread = ValidationThread()
-
-    // todo: remove this after debugging is complete
-    var seqNum:Int = 0
 
     var error:Boolean = false
 

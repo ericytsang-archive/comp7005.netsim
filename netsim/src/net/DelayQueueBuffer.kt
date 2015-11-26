@@ -38,8 +38,8 @@ class DelayQueueBuffer<Element>:Buffer<Element>
     }
 
     /**
-     * @param delay minimum time element must remain in collection in
-     *   milliseconds before it may be removed
+     * @param dequeueTimeMillis time when element may be removed from the
+     *   collection in milliseconds
      * @param element element that is being inserted into the collection
      */
     private inner class DelayedElement(private val dequeueTimeMillis:Long,val element:Element):Delayed

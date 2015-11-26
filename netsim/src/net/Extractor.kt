@@ -6,6 +6,7 @@ abstract class Extractor<Extractee:Buffer<Element>,Element>(val extractee:Extrac
 
     init
     {
+        worker.isDaemon = true
         worker.start()
     }
 
@@ -13,11 +14,6 @@ abstract class Extractor<Extractee:Buffer<Element>,Element>(val extractee:Extrac
 
     private inner class WorkerThread:Thread()
     {
-        init
-        {
-            isDaemon = true
-        }
-
         override fun run():Unit
         {
             while(true)
