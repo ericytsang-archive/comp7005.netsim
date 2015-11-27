@@ -1,8 +1,10 @@
 package gui
 
 import javafx.application.Application
+import javafx.application.Platform
 import javafx.beans.InvalidationListener
 import javafx.scene.Scene
+import javafx.scene.chart.PieChart
 import javafx.scene.control.ScrollPane
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.ColumnConstraints
@@ -10,11 +12,12 @@ import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
 import javafx.stage.Stage
 import net.NetworkSimulator
+import java.util.*
 
 class Window:Application()
 {
     private val WINDOW_TITLE = "Window Title"
-    private val WINDOW_WIDTH = 725
+    private val WINDOW_WIDTH = 1000
     private val WINDOW_HEIGHT = 480
 
     private val forwardingPane:ForwardingPane = ForwardingPane()
@@ -92,6 +95,63 @@ class Window:Application()
         netsim.socketStatus.addListener(InvalidationListener
             {
                 statisticsPane.socketStatus = netsim.socketStatus.value
+            })
+        netsim.networkUsage.addListener(InvalidationListener
+            {
+                Platform.runLater(
+                    {
+                        // add "unused" entry to pie chart
+                        val unusedEntry = statisticsPane.networkUsageChartData.find(
+                            {
+                                pieEntry ->
+                                pieEntry.name.equals("unused")
+                            })
+                        if(unusedEntry != null)
+                        {
+                            unusedEntry.pieValue = (netsim.capacity-netsim.bytesInFlight.value).toDouble()
+                        }
+                        else
+                        {
+                            statisticsPane.networkUsageChartData.add(
+                                PieChart.Data("unused",
+                                    (netsim.capacity-netsim.bytesInFlight.value).toDouble()))
+                        }
+
+                        // add network usage entries to the pie chart
+                        netsim.networkUsage.forEach(
+                            {
+                                mapEntry ->
+                                val pieEntry = statisticsPane.networkUsageChartData.find(
+                                    {
+                                        pieEntry ->
+                                        pieEntry.name.equals(mapEntry.key.toString())
+                                    })
+                                if(pieEntry != null)
+                                {
+                                    pieEntry.pieValue = mapEntry.value.toDouble()
+                                }
+                                else
+                                {
+                                    statisticsPane.networkUsageChartData.add(
+                                        PieChart.Data(
+                                            mapEntry.key.toString(),
+                                            mapEntry.value.toDouble()))
+                                }
+                            })
+
+                        // remove network usage entries from the pie chart
+                        val nameSet = LinkedHashSet<String>()
+                        nameSet.add("unused")
+                        netsim.networkUsage.keys.forEach(
+                            {
+                                nameSet.add(it.toString())
+                            })
+                        val toRemove = statisticsPane.networkUsageChartData.filter(
+                            {
+                                !nameSet.contains(it.name)
+                            })
+                        statisticsPane.networkUsageChartData.removeAll(toRemove)
+                    })
             })
 
         // initialize every one of the statistics pane's values to the netsim's defaults

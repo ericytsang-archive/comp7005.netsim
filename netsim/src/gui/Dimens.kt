@@ -1,8 +1,5 @@
 package gui
 
-/**
- * Created by Eric Tsang on 11/8/2015.
- */
 internal object Dimens
 {
     val KEYLINE_SMALL:Int = 8

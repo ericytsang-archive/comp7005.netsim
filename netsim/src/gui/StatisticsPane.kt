@@ -3,6 +3,7 @@ package gui
 import javafx.application.Platform
 import javafx.geometry.HPos
 import javafx.geometry.Insets
+import javafx.scene.chart.PieChart
 import javafx.scene.control.Label
 import javafx.scene.control.ProgressBar
 import javafx.scene.layout.ColumnConstraints
@@ -14,6 +15,7 @@ internal class StatisticsPane:GridPane()
 {
     private val COL_INDEX_LABEL:Int = 0
     private val COL_INDEX_CONTENT:Int = 1
+    private val COL_INDEX_NET_USAGE_CHART:Int = 2
 
     private val SOCKET_STATUS_LABEL:String = "Socket Status:"
     private val PACKETS_DELIVERED_LABEL:String = "Packets Delivered:"
@@ -30,6 +32,7 @@ internal class StatisticsPane:GridPane()
     private val bytesInFlightDisplay = TextDisplay()
     private val networkUsageDisplay = ProgressDisplay()
     private val packetDropRateDisplay = ProgressDisplay()
+    private val networkUsageChartDispay = PieChart()
 
     var socketStatus:SocketStatus = SocketStatus.OPEN
 
@@ -91,6 +94,8 @@ internal class StatisticsPane:GridPane()
             field = value
         }
 
+    var networkUsageChartData = networkUsageChartDispay.data
+
     init
     {
         // configure aesthetic properties
@@ -101,12 +106,16 @@ internal class StatisticsPane:GridPane()
         // configure grid constraints
         val column1 = ColumnConstraints()
         column1.halignment = HPos.RIGHT
-        columnConstraints.add(0,column1)
+        columnConstraints.add(COL_INDEX_LABEL,column1)
 
         val column2 = ColumnConstraints()
         column2.isFillWidth = true
         column2.hgrow = Priority.ALWAYS
-        columnConstraints.add(1,column2)
+        columnConstraints.add(COL_INDEX_CONTENT,column2)
+
+        val column3 = ColumnConstraints()
+        column1.halignment = HPos.CENTER
+        columnConstraints.add(COL_INDEX_NET_USAGE_CHART,column3)
 
         // configure & add child nodes
         socketStatusDisplay.label.text = SOCKET_STATUS_LABEL
@@ -115,6 +124,12 @@ internal class StatisticsPane:GridPane()
         bytesInFlightDisplay.label.text = BYTES_IN_FLIGHT_LABEL
         networkUsageDisplay.label.text = NETWORK_USAGE_LABEL
         packetDropRateDisplay.label.text = PACKET_DROP_RATE_LABEL
+        networkUsageChartDispay.minWidth = 250.0
+        networkUsageChartDispay.minHeight = 250.0
+        networkUsageChartDispay.prefWidth = 250.0
+        networkUsageChartDispay.prefHeight = 250.0
+        networkUsageChartDispay.animated = false
+        networkUsageChartDispay.labelsVisible = true
 
         add(socketStatusDisplay)
         add(packetsDeliveredDisplay)
@@ -122,6 +137,9 @@ internal class StatisticsPane:GridPane()
         add(bytesInFlightDisplay)
         add(networkUsageDisplay)
         add(packetDropRateDisplay)
+        // add the pie chart. it should be in its own column, and span all rows
+        // todo: find out way to get the row count some other way??? eh..
+        add(networkUsageChartDispay,COL_INDEX_NET_USAGE_CHART,0,1,nextRow+1)
     }
 
     private fun add(newTextDisplay:TextDisplay)

@@ -1,5 +1,6 @@
 package net
 
+import com.sun.javafx.collections.ObservableMapWrapper
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -7,6 +8,7 @@ import roll
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetSocketAddress
+import java.util.*
 
 /**
  * emulates a network.
@@ -64,6 +66,12 @@ class NetworkSimulator
      * [DatagramPacket].
      */
     val packetDropRate = SimpleDoubleProperty(0.0)
+
+    /**
+     * maps source [InetSocketAddress]es to the number of bytes in flight of
+     * [DatagramPacket]s from that source [InetSocketAddress].
+     */
+    val networkUsage = ObservableMapWrapper(LinkedHashMap<InetSocketAddress,Int>())
 
     /**
      * maps [InetSocketAddress] with a single [InetSocketAddress]. used to
@@ -201,6 +209,11 @@ class NetworkSimulator
                 // update bytes in flight
                 bytesInFlight.value += extractedItem.length
 
+                // update network usage
+                val inetSockAddr = InetSocketAddress(extractedItem.address,extractedItem.port)
+                val newValue = networkUsage.getOrElse(inetSockAddr,{0})+extractedItem.length
+                networkUsage.put(inetSockAddr,newValue)
+
                 // read packet from the socket, and place in delay buffer
                 delayQueueBuffer.put(extractedItem)
             }
@@ -217,6 +230,18 @@ class NetworkSimulator
         {
             // update bytes in flight
             bytesInFlight.value -= extractedItem.length
+
+            // update network usage
+            val inetSockAddr = InetSocketAddress(extractedItem.address,extractedItem.port)
+            val newValue = networkUsage.getOrElse(inetSockAddr,{0})-extractedItem.length
+            if(newValue != 0)
+            {
+                networkUsage.put(inetSockAddr,newValue)
+            }
+            else
+            {
+                networkUsage.remove(inetSockAddr)
+            }
 
             // read from the delay buffer, and forward packet to destination
             val srcSockAddr = InetSocketAddress(extractedItem.address,extractedItem.port)
