@@ -204,7 +204,7 @@ class NetworkSimulator
     {
         override fun onExtract(extractedItem:DatagramPacket)
         {
-            synchronized(this,
+            synchronized(this@NetworkSimulator,
                 {
                     if (!rollToDropPacket())
                     {
@@ -231,7 +231,7 @@ class NetworkSimulator
     {
         override fun onExtract(extractedItem:DatagramPacket)
         {
-            synchronized(this,
+            synchronized(this@NetworkSimulator,
                 {
                     // update bytes in flight
                     bytesInFlight.value -= extractedItem.length
