@@ -204,19 +204,22 @@ class NetworkSimulator
     {
         override fun onExtract(extractedItem:DatagramPacket)
         {
-            if(!rollToDropPacket())
-            {
-                // update bytes in flight
-                bytesInFlight.value += extractedItem.length
+            synchronized(this,
+                {
+                    if (!rollToDropPacket())
+                    {
+                        // update bytes in flight
+                        bytesInFlight.value += extractedItem.length
 
-                // update network usage
-                val inetSockAddr = InetSocketAddress(extractedItem.address,extractedItem.port)
-                val newValue = networkUsage.getOrElse(inetSockAddr,{0})+extractedItem.length
-                networkUsage.put(inetSockAddr,newValue)
+                        // update network usage
+                        val inetSockAddr = InetSocketAddress(extractedItem.address,extractedItem.port)
+                        val newValue = networkUsage.getOrElse(inetSockAddr,{ 0 })+extractedItem.length
+                        networkUsage.put(inetSockAddr,newValue)
 
-                // read packet from the socket, and place in delay buffer
-                delayQueueBuffer.put(extractedItem)
-            }
+                        // read packet from the socket, and place in delay buffer
+                        delayQueueBuffer.put(extractedItem)
+                    }
+                })
         }
     }
 
@@ -228,30 +231,33 @@ class NetworkSimulator
     {
         override fun onExtract(extractedItem:DatagramPacket)
         {
-            // update bytes in flight
-            bytesInFlight.value -= extractedItem.length
+            synchronized(this,
+                {
+                    // update bytes in flight
+                    bytesInFlight.value -= extractedItem.length
 
-            // update network usage
-            val inetSockAddr = InetSocketAddress(extractedItem.address,extractedItem.port)
-            val newValue = networkUsage.getOrElse(inetSockAddr,{0})-extractedItem.length
-            if(newValue != 0)
-            {
-                networkUsage.put(inetSockAddr,newValue)
-            }
-            else
-            {
-                networkUsage.remove(inetSockAddr)
-            }
+                    // update network usage
+                    val inetSockAddr = InetSocketAddress(extractedItem.address,extractedItem.port)
+                    val newValue = networkUsage.getOrElse(inetSockAddr,{ 0 })-extractedItem.length
+                    if (newValue != 0)
+                    {
+                        networkUsage.put(inetSockAddr,newValue)
+                    }
+                    else
+                    {
+                        networkUsage.remove(inetSockAddr)
+                    }
 
-            // read from the delay buffer, and forward packet to destination
-            val srcSockAddr = InetSocketAddress(extractedItem.address,extractedItem.port)
-            val dstSockAddr = routingTable?.get(srcSockAddr)
-            if(dstSockAddr != null)
-            {
-                extractedItem.address = dstSockAddr.address
-                extractedItem.port = dstSockAddr.port
-                datagramSocket.send(extractedItem)
-            }
+                    // read from the delay buffer, and forward packet to destination
+                    val srcSockAddr = InetSocketAddress(extractedItem.address,extractedItem.port)
+                    val dstSockAddr = routingTable?.get(srcSockAddr)
+                    if (dstSockAddr != null)
+                    {
+                        extractedItem.address = dstSockAddr.address
+                        extractedItem.port = dstSockAddr.port
+                        datagramSocket.send(extractedItem)
+                    }
+                })
         }
     }
 
