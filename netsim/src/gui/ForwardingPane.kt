@@ -7,7 +7,6 @@ import javafx.scene.control.Label
 import javafx.scene.control.TextField
 import javafx.scene.layout.*
 import net.NetUtils
-import parse
 import java.net.InetSocketAddress
 import java.util.*
 
@@ -209,8 +208,8 @@ internal class ForwardingPane:GridPane()
                         throw IllegalArgumentException()
 
                     // try to resolve addresses
-                    val sockAddr1 = InetSocketAddress(addr1.text,Int.parse(port1.text))
-                    val sockAddr2 = InetSocketAddress(addr2.text,Int.parse(port2.text))
+                    val sockAddr1 = InetSocketAddress(addr1.text,port1.text.toInt())
+                    val sockAddr2 = InetSocketAddress(addr2.text,port2.text.toInt())
 
                     // if addresses were not resolved, input is invalid; throw
                     if (sockAddr1.isUnresolved || sockAddr2.isUnresolved)

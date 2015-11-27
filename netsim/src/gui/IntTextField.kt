@@ -1,7 +1,6 @@
 package gui
 
 import javafx.scene.control.TextField
-import parse
 
 internal class IntTextField(var allowEmpty:Boolean = false):TextField()
 {
@@ -32,7 +31,7 @@ internal class IntTextField(var allowEmpty:Boolean = false):TextField()
         val newText = getText(0,start)+text+getText(end,length)
         try
         {
-            setValue(Int.parse(newText))
+            setValue(newText.toInt())
         }
         catch (e:NumberFormatException)
         {

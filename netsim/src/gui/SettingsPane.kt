@@ -8,7 +8,6 @@ import javafx.scene.control.Slider
 import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
-import parse
 
 internal class SettingsPane:GridPane()
 {
@@ -192,7 +191,7 @@ internal class SettingsPane:GridPane()
             doubleTextField.textProperty().addListener(
                 {
                     value,oldValue,newValue ->
-                    slider.value = Double.parse(newValue)
+                    slider.value = newValue.toDouble()
                     doubleTextField.text =
                         if (allowDecimalNumbers) slider.value.toString()
                         else Math.round(slider.value).toString()
