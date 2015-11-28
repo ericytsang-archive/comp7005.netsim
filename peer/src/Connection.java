@@ -17,7 +17,7 @@ public class Connection{
 
     private boolean connection_ending;
     private boolean connection_established;
-    private Integer synNotify;
+    private Object synNotify;
 
     private SocketAddress address;
     private ClientSocket client;
@@ -44,6 +44,7 @@ public class Connection{
 
         priorityQueue  = new HashMap<>();
         connection_established = false;
+        synNotify = new Object();
 
         try {
             congestionWindow = new CongestionWindow(new PacketDroppedObserver());
