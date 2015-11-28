@@ -1,7 +1,4 @@
-import com.sun.corba.se.impl.orbutil.closure.Constant;
-
 import java.nio.ByteBuffer;
-import java.util.Optional;
 
 /**
  * Created by Manuel on 2015-11-11.
