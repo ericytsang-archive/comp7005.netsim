@@ -1,3 +1,5 @@
+package ProtocolPeer;
+
 import java.io.IOException;
 import java.net.*;
 import java.util.HashMap;
@@ -23,7 +25,7 @@ public class ClientSocket {
         void onAccept(Connection newConnection);
     }
 
-    ClientSocket(int port, Observer observerv)
+    public ClientSocket(int port, Observer observerv)
     {
 
         observer = observerv;

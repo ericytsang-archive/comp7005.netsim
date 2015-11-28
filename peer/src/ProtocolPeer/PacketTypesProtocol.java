@@ -1,7 +1,9 @@
+package ProtocolPeer;
+
 import java.util.HashMap;
 import java.util.Map;
 
-public enum PacketType
+public enum PacketTypesProtocol
 {
     SYN(2),
     SYN_ACK(4),
@@ -12,13 +14,13 @@ public enum PacketType
 
     private int packetType;
 
-    private static Map<Integer, PacketType> map = new HashMap<>();
+    private static Map<Integer, PacketTypesProtocol> map = new HashMap<>();
 
     /**
      * adds every value to the map
      */
     static {
-        for (PacketType TODEnum : PacketType.values()) {
+        for (PacketTypesProtocol TODEnum : PacketTypesProtocol.values()) {
             map.put(TODEnum.packetType, TODEnum);
         }
     }
@@ -27,15 +29,15 @@ public enum PacketType
      * add every value to the enum
      * @param TOD enum value
      */
-    PacketType(final int TOD) { packetType = TOD; }
+    PacketTypesProtocol(final int TOD) { packetType = TOD; }
 
     /**
      *
-     * @param PacketType integer value fo the enum
+     * @param PacketTypesProtocol integer value fo the enum
      * @return actual enum
      */
-    public static PacketType valueOf(int PacketType) {
-        return map.get(PacketType);
+    public static PacketTypesProtocol valueOf(int PacketTypesProtocol) {
+        return map.get(PacketTypesProtocol);
     }
 
     /**

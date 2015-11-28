@@ -1,3 +1,5 @@
+package ProtocolPeer;
+
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.SocketAddress;
@@ -77,7 +79,7 @@ public class Connection{
                     SynDatagram synDatagram = new SynDatagram(coolDatagram.getPayload());
                     recv_SEQ = synDatagram.getSeq();
 
-                    ControlPacket handshakeResponse = new ControlPacket(PacketType.SYN_ACK);
+                    ControlPacket handshakeResponse = new ControlPacket(PacketTypesProtocol.SYN_ACK);
                     send_SEQ = getRandom();
                     handshakeResponse.addSequence(send_SEQ);
                     send_SEQ++;
@@ -129,7 +131,7 @@ public class Connection{
                     recv_SEQ = dataDatagram.getSeq();
                     send_ACK = recv_SEQ + dataDatagram.getLength();
 
-                    ControlPacket ackPacket= new ControlPacket(PacketType.ACK);
+                    ControlPacket ackPacket= new ControlPacket(PacketTypesProtocol.ACK);
                     ackPacket.addAcknowledgment(send_ACK);
                     sendAcknowledgment(new DatagramPacket(ackPacket.getPacket(), ackPacket.getPacket().length, address));
 
@@ -146,7 +148,7 @@ public class Connection{
                     {
                         recv_SEQ = synackDatagram.getSeq();
 
-                        ControlPacket handshakeFinal = new ControlPacket(PacketType.ACK);
+                        ControlPacket handshakeFinal = new ControlPacket(PacketTypesProtocol.ACK);
                         send_ACK = recv_SEQ + 1;
                         handshakeFinal.addAcknowledgment(send_ACK);
                         sendAcknowledgment(new DatagramPacket(handshakeFinal.getPacket(), handshakeFinal.getPacket().length, address));
@@ -170,12 +172,12 @@ public class Connection{
                         CoolDatagram Datagram = finDatagram;
 
 
-                        ControlPacket confirmFin = new ControlPacket(PacketType.ACK);
+                        ControlPacket confirmFin = new ControlPacket(PacketTypesProtocol.ACK);
                         send_ACK = recv_SEQ + 1;
                         confirmFin.addAcknowledgment(send_ACK);
                         sendAcknowledgment(new DatagramPacket(confirmFin.getPacket(), confirmFin.getPacket().length, address));
 
-                        ControlPacket finFinal = new ControlPacket(PacketType.FIN);
+                        ControlPacket finFinal = new ControlPacket(PacketTypesProtocol.FIN);
                         finFinal.addSequence(send_SEQ);
                         send_SEQ++;
                         sendPacket(new DatagramPacket(finFinal.getPacket(), finFinal.getPacket().length, address));
@@ -194,7 +196,7 @@ public class Connection{
 
     protected boolean connect()
     {
-        ControlPacket handshakeStart = new ControlPacket(PacketType.SYN);
+        ControlPacket handshakeStart = new ControlPacket(PacketTypesProtocol.SYN);
         send_SEQ = getRandom();
         handshakeStart.addSequence(send_SEQ);
         send_SEQ++;
@@ -334,7 +336,7 @@ public class Connection{
         @Override
         public void onPacketDropped(CoolDatagram coolDatagram)
         {
-            if(coolDatagram.getPacketType() == PacketType.SYN)
+            if(coolDatagram.getPacketType() == PacketTypesProtocol.SYN)
             {
                 connection_established = false;
                 synNotify.notify();

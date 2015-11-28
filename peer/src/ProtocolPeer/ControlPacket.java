@@ -1,3 +1,5 @@
+package ProtocolPeer;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -5,7 +7,7 @@ import java.nio.ByteBuffer;
  */
 public class ControlPacket extends Packet {
 
-    ControlPacket(PacketType packet_type)
+    ControlPacket(PacketTypesProtocol packet_type)
     {
         switch (packet_type) {
             case SYN:

@@ -1,3 +1,5 @@
+package ProtocolPeer;
+
 import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
 
@@ -7,7 +9,7 @@ import java.nio.ByteBuffer;
 public class CoolDatagram{
 
     private ByteBuffer packetPayload;
-    private PacketType packetType;
+    private PacketTypesProtocol packetType;
     private int length;
     private DatagramPacket udpPacket;
 
@@ -29,24 +31,24 @@ public class CoolDatagram{
         return packetPayload;
     }
 
-    protected PacketType getPacketType()
+    public PacketTypesProtocol getPacketType()
     {
         switch(packetPayload.get())
         {
             case ConstantDefinitions.SYN:
-                packetType = PacketType.SYN;
+                packetType = PacketTypesProtocol.SYN;
                 break;
             case ConstantDefinitions.ACK:
-                packetType = PacketType.ACK;
+                packetType = PacketTypesProtocol.ACK;
                 break;
             case ConstantDefinitions.DATA:
-                packetType = PacketType.DATA;
+                packetType = PacketTypesProtocol.DATA;
                 break;
             case ConstantDefinitions.SYNACK:
-                packetType = PacketType.SYN_ACK;
+                packetType = PacketTypesProtocol.SYN_ACK;
                 break;
             case ConstantDefinitions.FIN:
-                packetType = PacketType.FIN;
+                packetType = PacketTypesProtocol.FIN;
                 break;
             default:
                 System.err.println("unknown Packet Type");
