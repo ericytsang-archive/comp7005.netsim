@@ -1,0 +1,49 @@
+import java.util.HashMap;
+import java.util.Map;
+
+public enum PacketType
+{
+    SYN(2),
+    SYN_ACK(4),
+    ACK(6),
+    DATA(8),
+    FIN(10),
+    UNKNOWN(12);
+
+    private int packetType;
+
+    private static Map<Integer, PacketType> map = new HashMap<>();
+
+    /**
+     * adds every value to the map
+     */
+    static {
+        for (PacketType TODEnum : PacketType.values()) {
+            map.put(TODEnum.packetType, TODEnum);
+        }
+    }
+
+    /**
+     * add every value to the enum
+     * @param TOD enum value
+     */
+    PacketType(final int TOD) { packetType = TOD; }
+
+    /**
+     *
+     * @param PacketType integer value fo the enum
+     * @return actual enum
+     */
+    public static PacketType valueOf(int PacketType) {
+        return map.get(PacketType);
+    }
+
+    /**
+     *
+     * @return integer value of the enum
+     */
+    public int showByteValue()
+    {
+        return packetType;
+    }
+}
