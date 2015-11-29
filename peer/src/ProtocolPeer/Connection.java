@@ -19,7 +19,9 @@ public class Connection{
 
     private boolean connection_ending;
     private boolean connection_established;
+    private boolean readComplete;
     private Object synNotify;
+    private Object seqNotify;
 
     private SocketAddress address;
     private ClientSocket client;
@@ -46,7 +48,10 @@ public class Connection{
 
         priorityQueue  = new HashMap<>();
         connection_established = false;
+        connection_ending = false;
+        readComplete = false;
         synNotify = new Object();
+        seqNotify = new Object();
 
         try {
             congestionWindow = new CongestionWindow(new PacketDroppedObserver());
@@ -66,7 +71,7 @@ public class Connection{
         }
     }
 
-   protected boolean enqueue(DatagramPacket packet)
+    protected boolean enqueue(DatagramPacket packet)
     {
         CoolDatagram coolDatagram = new CoolDatagram(packet);
 
@@ -76,19 +81,25 @@ public class Connection{
 
                 if(!connection_established)
                 {
-                    SynDatagram synDatagram = new SynDatagram(coolDatagram.getPayload());
+                    SynDatagram synDatagram = new SynDatagram(coolDatagram);
                     recv_SEQ = synDatagram.getSeq();
+
+                    System.out.println("RECEIVED SYN: " + recv_SEQ);
 
                     ControlPacket handshakeResponse = new ControlPacket(PacketTypesProtocol.SYN_ACK);
                     send_SEQ = getRandom();
                     handshakeResponse.addSequence(send_SEQ);
-                    send_SEQ++;
-                    send_ACK = recv_SEQ + 1;
+
+                    send_ACK = recv_SEQ + ConstantDefinitions.SYN_SIZE;
+
+                    System.out.println("SENT SYNACK: " + send_SEQ + ", " + send_ACK);
+                    send_SEQ = send_SEQ + ConstantDefinitions.SYNACK_SIZE;
                     handshakeResponse.addAcknowledgment(send_ACK);
                     sendPacket(new DatagramPacket(handshakeResponse.getPacket(), handshakeResponse.getPacket().length, address));
 
                     current_SEQ = send_ACK;
                     connection_established = true;
+                    System.out.println("CONNECTION SUCCESSFULLY RECEIVED !!");
 
                 }
 
@@ -96,7 +107,7 @@ public class Connection{
 
             case ACK:
 
-                AckDatagram ackDatagram = new AckDatagram(coolDatagram.getPayload());
+                AckDatagram ackDatagram = new AckDatagram(coolDatagram);
                 congestionWindow.ackPacket(ackDatagram.getAck());
 
                 if(connection_ending)
@@ -127,9 +138,17 @@ public class Connection{
 
                 if(connection_established)
                 {
-                    DataDatagram dataDatagram = new DataDatagram(coolDatagram.getPayload());
+                    DataDatagram dataDatagram = new DataDatagram(coolDatagram);
                     recv_SEQ = dataDatagram.getSeq();
                     send_ACK = recv_SEQ + dataDatagram.getLength();
+
+                    System.out.println("Received SEQ: " + recv_SEQ);
+                    System.out.println("Sent ACK: " + send_ACK);
+
+                   /* StringBuffer sb = new StringBuffer();
+                    for( byte b : dataDatagram.getData().array() )
+                        sb.append(Integer.toHexString( b ));
+                    System.out.println(sb.toString());*/
 
                     ControlPacket ackPacket= new ControlPacket(PacketTypesProtocol.ACK);
                     ackPacket.addAcknowledgment(send_ACK);
@@ -142,30 +161,40 @@ public class Connection{
 
             case SYN_ACK:
 
-                    SynAckDatagram synackDatagram = new SynAckDatagram(coolDatagram.getPayload());
+                SynAckDatagram synackDatagram = new SynAckDatagram(coolDatagram);
 
-                    if(synackDatagram.getAck() == send_SEQ)
-                    {
-                        recv_SEQ = synackDatagram.getSeq();
+                if(synackDatagram.getAck() == send_SEQ)
+                {
+                    recv_SEQ = synackDatagram.getSeq();
 
-                        ControlPacket handshakeFinal = new ControlPacket(PacketTypesProtocol.ACK);
-                        send_ACK = recv_SEQ + 1;
-                        handshakeFinal.addAcknowledgment(send_ACK);
-                        sendAcknowledgment(new DatagramPacket(handshakeFinal.getPacket(), handshakeFinal.getPacket().length, address));
+                    System.out.println("RECEIVED SYNACK: " + recv_SEQ + ", " + synackDatagram.getAck());
 
-                        current_SEQ = send_ACK;
-                        connection_established = true;
+                    congestionWindow.ackPacket(synackDatagram.getAck());
 
+                    ControlPacket handshakeFinal = new ControlPacket(PacketTypesProtocol.ACK);
+                    send_ACK = recv_SEQ + ConstantDefinitions.SYNACK_SIZE;
+                    handshakeFinal.addAcknowledgment(send_ACK);
+                    sendAcknowledgment(new DatagramPacket(handshakeFinal.getPacket(), handshakeFinal.getPacket().length, address));
 
+                    System.out.println("SENT ACK: " + send_ACK);
+
+                    current_SEQ = send_ACK;
+                    connection_established = true;
+
+                    synchronized (synNotify) {
                         synNotify.notify();
                     }
+                    synchronized (seqNotify) {
+                        seqNotify.notify();
+                    }
+                }
 
                 break;
 
             case FIN:
                 if(connection_established)
                 {
-                    FinDatagram finDatagram = new FinDatagram(coolDatagram.getPayload());
+                    FinDatagram finDatagram = new FinDatagram(coolDatagram);
                     if(finDatagram.getSeq() == send_ACK)
                     {
                         finDatagram.getSeq();
@@ -173,7 +202,7 @@ public class Connection{
 
 
                         ControlPacket confirmFin = new ControlPacket(PacketTypesProtocol.ACK);
-                        send_ACK = recv_SEQ + 1;
+                        send_ACK = recv_SEQ + ConstantDefinitions.FIN_SIZE;
                         confirmFin.addAcknowledgment(send_ACK);
                         sendAcknowledgment(new DatagramPacket(confirmFin.getPacket(), confirmFin.getPacket().length, address));
 
@@ -187,7 +216,7 @@ public class Connection{
                 }
                 break;
             case UNKNOWN:
-                //IGNORE
+                System.out.println("what is going on");
                 break;
         }
 
@@ -199,10 +228,14 @@ public class Connection{
         ControlPacket handshakeStart = new ControlPacket(PacketTypesProtocol.SYN);
         send_SEQ = getRandom();
         handshakeStart.addSequence(send_SEQ);
-        send_SEQ++;
+        send_SEQ += ConstantDefinitions.SYN_SIZE;
+        sendPacket(new DatagramPacket(handshakeStart.getPacket(), handshakeStart.getPacket().length, address));
+
 
         try {
-            synNotify.wait();
+            synchronized (synNotify) {
+                synNotify.wait();
+            }
 
             if(connection_established)
             {
@@ -220,7 +253,7 @@ public class Connection{
 
     private int getRandom()
     {
-        return (int) Math.random() * Integer.MAX_VALUE;
+        return (int) (Math.random() * Integer.MAX_VALUE);
     }
 
     private void sendAcknowledgment(DatagramPacket sendDatagram)
@@ -232,7 +265,27 @@ public class Connection{
     {
         client.sendingQueue.add(sendDatagram);
         CoolDatagram coolDatagram = new CoolDatagram(sendDatagram);
+        switch (coolDatagram.getPacketType()) {
+            case SYN:
+                coolDatagram = new SynDatagram(coolDatagram);
+                break;
+            case DATA:
+                coolDatagram = new DataDatagram(coolDatagram);
+                break;
+            case SYN_ACK:
+                coolDatagram = new SynAckDatagram(coolDatagram);
+                break;
+            case FIN:
+                coolDatagram = new FinDatagram(coolDatagram);
+                break;
+            default:
+                coolDatagram = null;
+                System.err.println("unknown Packet Type");
+                break;
+        }
+
         congestionWindow.putPacket(coolDatagram);
+
     }
 
     public InputStream getInputStream()
@@ -259,38 +312,52 @@ public class Connection{
         @Override
         public synchronized int read() throws IOException
         {
-            byte[] b = new byte[1];
-            read(b, 0, 1);
-            return b[0];
+            coolEnqueueing(1);
+            return super.read();
         }
 
         @Override
         public int read(byte[] b) throws IOException
         {
-            return read(b, 0 ,b.length);
+            coolEnqueueing(b.length);
+            return super.read(b);
         }
 
         @Override
         public synchronized int read(byte[] b, int off, int len) throws IOException
         {
-            if(current_SEQ != 0)
+            coolEnqueueing(len);
+            return super.read(b, off, len);
+        }
+
+        private void coolEnqueueing(int len) throws IOException {
+            if(current_SEQ == 0)
             {
-                while(priorityQueue.containsKey(current_SEQ) && this.available() < len)
-                {
-                    if(ConstantDefinitions.INITIAL_WINDOW_SIZE - this.available() < priorityQueue.get(current_SEQ).getLength())
-                    {
+                synchronized (seqNotify) {
+                    try {
+                        seqNotify.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            while(true) {
+                while (priorityQueue.containsKey(current_SEQ) && this.available() < len) {
+                    if (ConstantDefinitions.INITIAL_WINDOW_SIZE - this.available() < priorityQueue.get(current_SEQ).getLength()) {
                         break;
                     }
 
-                    current_SEQ = current_SEQ + priorityQueue.get(current_SEQ).getLength();
-                    receiveOutStream.write(priorityQueue.remove(current_SEQ).getData().array());
+                    readComplete = true;
+                    receiveOutStream.write(priorityQueue.get(current_SEQ).getData().array());
+                    current_SEQ = current_SEQ + priorityQueue.remove(current_SEQ).getLength();
                 }
 
-                return super.read(b, off, len);
-            }
-            else
-            {
-                return 0;
+                if(readComplete)
+                {
+                    readComplete = false;
+                    break;
+                }
             }
         }
     }
@@ -304,14 +371,14 @@ public class Connection{
 
         @Override
         public void write(byte[] b) throws IOException {
-            super.write(b, 0, b.length);
+            write(b, 0, b.length);
         }
 
         @Override
         public void write(int b) throws IOException {
             byte[] barr = new byte[1];
             barr[0] = (byte) b;
-            super.write(barr, 0 ,1);
+            write(barr, 0 ,1);
         }
 
         @Override
@@ -325,9 +392,14 @@ public class Connection{
             DataPacket dataPacket = new DataPacket(len + ConstantDefinitions.DATA_OVERHEAD);
             dataPacket.addSequence(send_SEQ);
             dataPacket.addData(barr, read);
+
+            System.out.println(dataPacket.getPacket().toString());
+
             sendPacket(new DatagramPacket(dataPacket.getPacket(), dataPacket.getPacket().length, address));
 
-            send_SEQ = send_SEQ + read;
+            System.out.println("SEND SEQ: " + send_SEQ);
+
+            send_SEQ = send_SEQ + read + ConstantDefinitions.DATA_OVERHEAD;
         }
     }
 
@@ -336,10 +408,14 @@ public class Connection{
         @Override
         public void onPacketDropped(CoolDatagram coolDatagram)
         {
+            System.out.println("PACKET DROPPED");
+
             if(coolDatagram.getPacketType() == PacketTypesProtocol.SYN)
             {
                 connection_established = false;
-                synNotify.notify();
+                synchronized (synNotify) {
+                    synNotify.notify();
+                }
             }
             else
             {

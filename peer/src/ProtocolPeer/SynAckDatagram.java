@@ -7,14 +7,15 @@ import java.nio.ByteBuffer;
  */
 public class SynAckDatagram extends CoolDatagram {
 
-    int NUM_SEQ;
     int NUM_ACK;
 
 
-    SynAckDatagram(ByteBuffer payload)
+    SynAckDatagram(CoolDatagram coolDatagram)
     {
-        NUM_SEQ = payload.getInt();
-        NUM_ACK = payload.getInt();
+        super(coolDatagram.getUdpPacket());
+        length = coolDatagram.getPayload().limit();
+        NUM_SEQ = coolDatagram.getPayload().getInt();
+        NUM_ACK = coolDatagram.getPayload().getInt();
     }
 
     public int getSeq()

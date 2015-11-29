@@ -6,35 +6,28 @@ import java.nio.ByteBuffer;
 /**
  * Created by Manuel on 2015-11-25.
  */
-public class CoolDatagram{
+public class CoolDatagram {
 
     private ByteBuffer packetPayload;
     private PacketTypesProtocol packetType;
-    private int length;
+    protected int length;
     private DatagramPacket udpPacket;
+    protected int NUM_SEQ;
 
-    CoolDatagram(DatagramPacket packet)
-    {
+    CoolDatagram(DatagramPacket packet) {
         udpPacket = packet;
-        length = packet.getData().length;
+        length = packet.getLength();
         packetPayload = ByteBuffer.allocate(length);
-        packetPayload.put(packet.getData());
+        packetPayload.put(packet.getData(), 0, length);
+        packetPayload.clear();
     }
 
-    CoolDatagram()
-    {
-
-    }
-
-    protected ByteBuffer getPayload()
-    {
+    protected ByteBuffer getPayload() {
         return packetPayload;
     }
 
-    public PacketTypesProtocol getPacketType()
-    {
-        switch(packetPayload.get())
-        {
+    public PacketTypesProtocol getPacketType() {
+        switch (packetPayload.get()) {
             case ConstantDefinitions.SYN:
                 packetType = PacketTypesProtocol.SYN;
                 break;
@@ -59,10 +52,15 @@ public class CoolDatagram{
         return packetType;
     }
 
+    public PacketTypesProtocol getPacketTypeDone()
+    {
+        return packetType;
+    }
+
 
     protected int getSeq()
     {
-        return 0;
+        return NUM_SEQ;
     }
 
     protected int getLength()

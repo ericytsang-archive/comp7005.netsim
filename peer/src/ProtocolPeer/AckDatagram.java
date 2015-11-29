@@ -7,11 +7,13 @@ import java.nio.ByteBuffer;
  */
 public class AckDatagram extends CoolDatagram {
 
-    int NUM_ACK;
 
-    AckDatagram(ByteBuffer payload)
+    private int NUM_ACK;
+
+    AckDatagram(CoolDatagram coolDatagram)
     {
-        NUM_ACK = payload.getInt();
+        super(coolDatagram.getUdpPacket());
+        NUM_ACK = coolDatagram.getPayload().getInt();
     }
 
     public int getAck()

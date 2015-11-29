@@ -7,14 +7,11 @@ import java.nio.ByteBuffer;
  */
 public class FinDatagram extends CoolDatagram {
 
-    int NUM_SEQ;
-    int NUM_ACK;
-
-
-    FinDatagram(ByteBuffer payload)
+    FinDatagram(CoolDatagram coolDatagram)
     {
-        NUM_SEQ = payload.getInt();
-        NUM_ACK = payload.getInt();
+        super(coolDatagram.getUdpPacket());
+        length = coolDatagram.getPayload().limit();
+        NUM_SEQ = coolDatagram.getPayload().getInt();
     }
 
     public int getSeq()

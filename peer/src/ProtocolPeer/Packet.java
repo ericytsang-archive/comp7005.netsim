@@ -21,7 +21,7 @@ public class Packet {
         }
 
         max_size = size;
-        bytebuffer.allocate(max_size);
+        bytebuffer = ByteBuffer.allocate(max_size);
 
         length = 0;
         initiated = true;
@@ -46,7 +46,7 @@ public class Packet {
                 return false;
             }
 
-            bytebuffer.put(data, length, size);
+            bytebuffer.put(data, 0, size);
             length += size;
 
             return true;
@@ -66,7 +66,7 @@ public class Packet {
             }
 
             ByteBuffer seq_num_ba = ByteBuffer.allocate(ConstantDefinitions.SEQ_BYTESIZE);
-            bytebuffer.put(seq_num_ba.putInt(seq_num).array(), length, ConstantDefinitions.SEQ_BYTESIZE);
+            bytebuffer.put(seq_num_ba.putInt(seq_num).array(), 0, ConstantDefinitions.SEQ_BYTESIZE);
             length += ConstantDefinitions.SEQ_BYTESIZE;
             return true;
         }
@@ -86,7 +86,7 @@ public class Packet {
             }
 
             ByteBuffer ack_num_ba = ByteBuffer.allocate(ConstantDefinitions.ACK_BYTESIZE);
-            bytebuffer.put(ack_num_ba.putInt(ack_num).array(), length, ConstantDefinitions.ACK_BYTESIZE);
+            bytebuffer.put(ack_num_ba.putInt(ack_num).array(), 0, ConstantDefinitions.ACK_BYTESIZE);
             length += ConstantDefinitions.ACK_BYTESIZE;
 
             return true;

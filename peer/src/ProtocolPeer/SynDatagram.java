@@ -7,12 +7,11 @@ import java.nio.ByteBuffer;
  */
 public class SynDatagram extends CoolDatagram {
 
-    int NUM_SEQ;
-
-
-    SynDatagram(ByteBuffer payload)
+    SynDatagram(CoolDatagram coolDatagram)
     {
-        NUM_SEQ = payload.getInt();
+        super(coolDatagram.getUdpPacket());
+        length = coolDatagram.getPayload().limit();
+        NUM_SEQ = coolDatagram.getPayload().getInt();
     }
 
     public int getSeq()

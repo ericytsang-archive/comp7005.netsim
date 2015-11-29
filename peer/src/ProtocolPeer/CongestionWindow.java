@@ -62,6 +62,9 @@ public class CongestionWindow {
 
         protected boolean ackPacket(int sequenceNumber)
         {
+
+            System.out.println("HAS THE ACK? : " + sequenceNumber +  queueMap.containsKey(sequenceNumber));
+            System.out.println(queueMap.toString());
             DelayedDatagram ackedDatagram = queueMap.get(sequenceNumber);
 
             if(ackedDatagram != null) {
@@ -101,6 +104,9 @@ public class CongestionWindow {
 
 
                 DelayedDatagram delayedDatagram = new DelayedDatagram(coolDatagram);
+
+                System.out.println("SEQ NUM: "  + coolDatagram.getSeq());
+                System.out.println("LENGTH: "  + coolDatagram.getLength());
                 queueMap.put(coolDatagram.getSeq() + coolDatagram.getLength(), delayedDatagram);
                 delayQueue.add(delayedDatagram);
 

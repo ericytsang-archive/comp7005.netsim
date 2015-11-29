@@ -14,7 +14,7 @@ public class ConstantDefinitions {
     public static final int SYN_SIZE = 5;
     public static final int SYNACK_SIZE = 9;
     public static final int ACK_SIZE = 5;
-    public static final int FIN_SIZE = 9;
+    public static final int FIN_SIZE = 5;
     public static final int DATA_OVERHEAD = 5;
 
     public static final int SEQ_BYTESIZE = 4;

@@ -7,14 +7,17 @@ import java.nio.ByteBuffer;
  */
 public class DataDatagram extends CoolDatagram {
 
-    int NUM_SEQ;
     ByteBuffer dataPayload;
+    ByteBuffer actualPayload;
 
-
-    DataDatagram(ByteBuffer payload)
+    DataDatagram(CoolDatagram coolDatagram)
     {
-        NUM_SEQ = payload.getInt();
-        dataPayload = payload;
+        super(coolDatagram.getUdpPacket());
+        NUM_SEQ = coolDatagram.getPayload().getInt();
+        dataPayload = coolDatagram.getPayload();
+        dataPayload.clear();
+        actualPayload = ByteBuffer.allocate(length - ConstantDefinitions.DATA_OVERHEAD);
+        actualPayload.put(dataPayload.array(), ConstantDefinitions.DATA_OVERHEAD, length - ConstantDefinitions.DATA_OVERHEAD);
     }
 
     public int getSeq()
@@ -24,6 +27,6 @@ public class DataDatagram extends CoolDatagram {
 
     public ByteBuffer getData()
     {
-        return dataPayload;
+        return actualPayload;
     }
 }

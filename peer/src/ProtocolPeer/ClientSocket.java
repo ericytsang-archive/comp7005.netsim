@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Created by Manuel on 2015-11-11.
@@ -13,7 +13,7 @@ public class ClientSocket {
 
     private DatagramSocket mainSocket;
     private DatagramPacket udpPacket;
-    protected LinkedBlockingDeque<DatagramPacket> sendingQueue;
+    protected LinkedBlockingQueue<DatagramPacket> sendingQueue;
     private Map<SocketAddress, Connection> connectionList;
 
     private final Observer observer;
@@ -32,7 +32,7 @@ public class ClientSocket {
         connectionList = new HashMap<>();
 
         udpPacket = new DatagramPacket(new byte[ConstantDefinitions.MAX_PACKETSIZE], ConstantDefinitions.MAX_PACKETSIZE);
-        sendingQueue = new LinkedBlockingDeque<>();
+        sendingQueue = new LinkedBlockingQueue<>();
 
         try {
             mainSocket = new DatagramSocket(port);
@@ -48,13 +48,15 @@ public class ClientSocket {
         new Thread(this::startReceiving).start();
     }
 
-    public Connection connect(SocketAddress address) throws ConnectException
+    public Connection connect(InetSocketAddress address) throws ConnectException
     {
         Connection newConnection = new Connection(address, this);
         connectionList.put(address, newConnection);
+
         if(newConnection.connect())
         {
-            return newConnection;
+             System.out.println("CONNECTION SUCCESSFUL !!");
+             return newConnection;
         }
         else
         {
@@ -67,7 +69,10 @@ public class ClientSocket {
         while(running)
         {
             try {
+
                 mainSocket.send(sendingQueue.take());
+                System.out.println("SENT DATAGRAM");
+
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {
@@ -82,22 +87,25 @@ public class ClientSocket {
         {
             try {
                 mainSocket.receive(udpPacket);
+                System.out.println("RECEIVED DATAGRAM");
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
             if(connectionList.containsKey(udpPacket.getSocketAddress()))
             {
-                Connection existingConnection = connectionList.get(udpPacket.getAddress());
+                Connection existingConnection = connectionList.get(udpPacket.getSocketAddress());
                 existingConnection.enqueue(udpPacket);
             }
             else
             {
                 if(listening) {
-                    Connection newConnection = new Connection(udpPacket.getSocketAddress(), this);
+                    System.out.println("NEW CONNECTION");
+                    final Connection newConnection = new Connection(udpPacket.getSocketAddress(), this);
                     connectionList.put(udpPacket.getSocketAddress(), newConnection);
                     newConnection.enqueue(udpPacket);
-                    observer.onAccept(newConnection);
+                    new Thread(() -> observer.onAccept(newConnection)).start();
                 }
             }
         }
