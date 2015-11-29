@@ -1,4 +1,4 @@
-package ProtocolTest;
+package ProtocolSendTest;
 
 import ProtocolPeer.*;
 
@@ -26,16 +26,21 @@ public class ProtocolTestSend
         }
 
         DataOutputStream oustream = new DataOutputStream(connection.getOutputStream());
+        int testing_fin = 0;
 
-        while(true)
+        while(testing_fin < 10)
         {
             oustream.write(5);
+            testing_fin++;
+
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+
+        connection.disconnect();
     }
 
     static public class ClientObserver implements ClientSocket.Observer

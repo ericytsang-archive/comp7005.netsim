@@ -21,6 +21,7 @@ public class ConstantDefinitions {
     public static final int ACK_BYTESIZE = 4;
     public static final int MAX_PACKETSIZE = 8192;
     public static final int INITIAL_WINDOW_SIZE = 50000;
+    public static final int RANDOM_FACTOR = 2;
 
     public static final int INITIAL_TIMEOUT = 10000;
     public static final long RTT_OVERHEAD = 50;

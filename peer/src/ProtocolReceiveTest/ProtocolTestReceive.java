@@ -1,4 +1,7 @@
-import ProtocolPeer.*;
+package ProtocolReceiveTest;
+
+import ProtocolPeer.ClientSocket;
+import ProtocolPeer.Connection;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -30,6 +33,11 @@ public class ProtocolTestReceive {
 
             while(true)
             {
+                if(!newConnection.isActive())
+                {
+                    break;
+                }
+
                 try {
                     System.out.println(is.read());
                 } catch (IOException e) {

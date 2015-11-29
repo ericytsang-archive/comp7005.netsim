@@ -17,9 +17,14 @@ public class Connection{
     private int recv_SEQ;
     private int current_SEQ;
 
-    private boolean connection_ending;
     private boolean connection_established;
+    private boolean connection_active;
+
+    private boolean started_fin;
+    private boolean response_fin;
+
     private boolean readComplete;
+
     private Object synNotify;
     private Object seqNotify;
 
@@ -47,9 +52,15 @@ public class Connection{
         this.client = client;
 
         priorityQueue  = new HashMap<>();
+
         connection_established = false;
-        connection_ending = false;
+        connection_active = true;
+
+        started_fin = false;
+        response_fin = false;
+
         readComplete = false;
+
         synNotify = new Object();
         seqNotify = new Object();
 
@@ -110,11 +121,13 @@ public class Connection{
                 AckDatagram ackDatagram = new AckDatagram(coolDatagram);
                 congestionWindow.ackPacket(ackDatagram.getAck());
 
-                if(connection_ending)
+                if(response_fin)
                 {
+
                     if(ackDatagram.getAck() == send_SEQ)
                     {
                         connection_established = false;
+                        connection_active = false;
 
                         try {
 
@@ -128,6 +141,8 @@ public class Connection{
                         }
 
                         client.disconnect(this);
+                        System.out.println("CONNECTION DISCONNECTED");
+
 
                     }
                 }
@@ -195,23 +210,47 @@ public class Connection{
                 if(connection_established)
                 {
                     FinDatagram finDatagram = new FinDatagram(coolDatagram);
+
+                    System.out.println("Received FIN SEQ: " + finDatagram.getSeq());
+                    System.out.println("CURRENT Sent ACK: " + send_ACK);
+
                     if(finDatagram.getSeq() == send_ACK)
                     {
-                        finDatagram.getSeq();
-                        CoolDatagram Datagram = finDatagram;
-
-
                         ControlPacket confirmFin = new ControlPacket(PacketTypesProtocol.ACK);
-                        send_ACK = recv_SEQ + ConstantDefinitions.FIN_SIZE;
+                        send_ACK += ConstantDefinitions.FIN_SIZE;
                         confirmFin.addAcknowledgment(send_ACK);
                         sendAcknowledgment(new DatagramPacket(confirmFin.getPacket(), confirmFin.getPacket().length, address));
 
-                        ControlPacket finFinal = new ControlPacket(PacketTypesProtocol.FIN);
-                        finFinal.addSequence(send_SEQ);
-                        send_SEQ++;
-                        sendPacket(new DatagramPacket(finFinal.getPacket(), finFinal.getPacket().length, address));
+                        if(started_fin && !response_fin)
+                        {
+                            connection_established = false;
+                            connection_active = false;
 
-                        connection_ending = true;
+                            try {
+
+                                sendInStream.close();
+                                sendOutStream.close();
+                                receiveInStream.close();
+                                receiveOutStream.close();
+
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                            client.disconnect(this);
+                            System.out.println("CONNECTION DISCONNECTED");
+                        }
+
+                        if(!started_fin)
+                        {
+                            ControlPacket finFinal = new ControlPacket(PacketTypesProtocol.FIN);
+                            finFinal.addSequence(send_SEQ);
+                            send_SEQ = send_SEQ + ConstantDefinitions.FIN_SIZE;
+                            sendPacket(new DatagramPacket(finFinal.getPacket(), finFinal.getPacket().length, address));
+
+                            response_fin = true;
+                            started_fin = true;
+                        }
                     }
                 }
                 break;
@@ -221,6 +260,17 @@ public class Connection{
         }
 
         return false;
+    }
+
+    public void disconnect()
+    {
+        ControlPacket starFin = new ControlPacket(PacketTypesProtocol.FIN);
+        starFin.addSequence(send_SEQ);
+        send_SEQ = send_SEQ + ConstantDefinitions.FIN_SIZE;
+        sendPacket(new DatagramPacket(starFin.getPacket(), starFin.getPacket().length, address));
+
+        started_fin = true;
+        System.out.println("SENT DC REQUEST");
     }
 
     protected boolean connect()
@@ -253,7 +303,7 @@ public class Connection{
 
     private int getRandom()
     {
-        return (int) (Math.random() * Integer.MAX_VALUE);
+        return (int) ((Math.random() * Integer.MAX_VALUE) / ConstantDefinitions.RANDOM_FACTOR);
     }
 
     private void sendAcknowledgment(DatagramPacket sendDatagram)
@@ -303,6 +353,10 @@ public class Connection{
         return address;
     }
 
+    public boolean isActive()
+    {
+        return connection_active;
+    }
     public class CoolPipedInputStream extends PipedInputStream
     {
         CoolPipedInputStream(PipedOutputStream out, int size) throws IOException {
@@ -385,21 +439,56 @@ public class Connection{
         public void write(byte[] b, int off, int len) throws IOException {
 
             super.write(b, off, len);
+            int max_len = 0;
 
-            byte[] barr = new byte[len];
-            int read = sendInStream.read(barr, 0, len);
+            if(len > ConstantDefinitions.MAX_PACKETSIZE - ConstantDefinitions.DATA_OVERHEAD)
+            {
+                while(len > 0)
+                {
+                    max_len = len;
 
-            DataPacket dataPacket = new DataPacket(len + ConstantDefinitions.DATA_OVERHEAD);
-            dataPacket.addSequence(send_SEQ);
-            dataPacket.addData(barr, read);
+                    if(max_len >= ConstantDefinitions.MAX_PACKETSIZE - ConstantDefinitions.DATA_OVERHEAD)
+                    {
+                        max_len = ConstantDefinitions.MAX_PACKETSIZE - ConstantDefinitions.DATA_OVERHEAD;
+                    }
 
-            System.out.println(dataPacket.getPacket().toString());
+                    byte[] barr = new byte[max_len];
 
-            sendPacket(new DatagramPacket(dataPacket.getPacket(), dataPacket.getPacket().length, address));
+                    int read = sendInStream.read(barr, 0, max_len);
 
-            System.out.println("SEND SEQ: " + send_SEQ);
+                    DataPacket dataPacket = new DataPacket(max_len + ConstantDefinitions.DATA_OVERHEAD);
+                    dataPacket.addSequence(send_SEQ);
+                    dataPacket.addData(barr, read);
 
-            send_SEQ = send_SEQ + read + ConstantDefinitions.DATA_OVERHEAD;
+                    System.out.println(dataPacket.getPacket().toString());
+
+                    sendPacket(new DatagramPacket(dataPacket.getPacket(), dataPacket.getPacket().length, address));
+
+                    System.out.println("SEND SEQ: " + send_SEQ);
+
+                    send_SEQ = send_SEQ + read + ConstantDefinitions.DATA_OVERHEAD;
+
+                    len = len - max_len;
+                }
+            }
+            else
+            {
+                byte[] barr = new byte[len];
+
+                int read = sendInStream.read(barr, 0, len);
+
+                DataPacket dataPacket = new DataPacket(len + ConstantDefinitions.DATA_OVERHEAD);
+                dataPacket.addSequence(send_SEQ);
+                dataPacket.addData(barr, read);
+
+                System.out.println(dataPacket.getPacket().toString());
+
+                sendPacket(new DatagramPacket(dataPacket.getPacket(), dataPacket.getPacket().length, address));
+
+                System.out.println("SEND SEQ: " + send_SEQ);
+
+                send_SEQ = send_SEQ + read + ConstantDefinitions.DATA_OVERHEAD;
+            }
         }
     }
 
