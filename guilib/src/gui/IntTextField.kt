@@ -2,7 +2,7 @@ package gui
 
 import javafx.scene.control.TextField
 
-internal class IntTextField(var allowEmpty:Boolean = false):TextField()
+public class IntTextField(var allowEmpty:Boolean = false):TextField()
 {
     var min:Int = Int.MIN_VALUE
 
