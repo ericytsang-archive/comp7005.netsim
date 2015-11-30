@@ -16,7 +16,7 @@ import java.util.*
 
 class Window:Application()
 {
-    private val WINDOW_TITLE = "Window Title"
+    private val WINDOW_TITLE = "Network Simulator"
     private val WINDOW_WIDTH = 1000
     private val WINDOW_HEIGHT = 480
 
@@ -33,7 +33,7 @@ class Window:Application()
 
         // set the scene (inside the window)
         primaryStage.scene = Scene(ContentPane(),WINDOW_WIDTH.toDouble(),WINDOW_HEIGHT.toDouble())
-        primaryStage.scene.stylesheets.add("./gui/style.css")
+        primaryStage.scene.stylesheets.add(CSS.FILE_PATH)
         primaryStage.show()
 
         // bind setting pane properties to modify network simulator values

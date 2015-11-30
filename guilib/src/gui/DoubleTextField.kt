@@ -2,7 +2,7 @@ package gui
 
 import javafx.scene.control.TextField
 
-internal class DoubleTextField(var allowEmpty:Boolean = false):TextField()
+public class DoubleTextField(var allowEmpty:Boolean = false):TextField()
 {
     var min:Double = Double.MIN_VALUE
 

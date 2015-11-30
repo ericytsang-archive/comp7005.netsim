@@ -1,0 +1,20 @@
+
+.warning_control
+{
+    -fx-base: salmon;
+}
+
+.non_editable_control
+{
+    -fx-base: gray;
+}
+
+.warning_text
+{
+    -fx-text-fill: "#F00";
+}
+
+.confirm_text
+{
+    -fx-text-fill: "#0A0";
+}
