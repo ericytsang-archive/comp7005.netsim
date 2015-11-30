@@ -28,9 +28,10 @@ public class ProtocolTestSend
         DataOutputStream oustream = new DataOutputStream(connection.getOutputStream());
         int testing_fin = 0;
 
+        byte[] data = new byte[]{5,5,5,5,5,5,5,5,5,5,5,5,5};
         while(testing_fin < 100000)
         {
-            oustream.write(5);
+            oustream.write(data);
             testing_fin++;
             System.out.println("TESTING FIN COUNT: " + testing_fin);
 

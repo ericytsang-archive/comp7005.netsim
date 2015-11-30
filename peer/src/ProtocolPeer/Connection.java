@@ -397,6 +397,11 @@ public class Connection{
                 }
             }
 
+            if(this.available() >= len)
+            {
+                return;
+            }
+
             while(true) {
                 while (priorityQueue.containsKey(current_SEQ) && this.available() < len) {
                     if (ConstantDefinitions.INITIAL_WINDOW_SIZE - this.available() < priorityQueue.get(current_SEQ).getLength()) {
