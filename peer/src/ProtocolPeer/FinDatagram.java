@@ -1,7 +1,5 @@
 package ProtocolPeer;
 
-import java.nio.ByteBuffer;
-
 /**
  * Created by Manuel on 2015-11-25.
  */

@@ -12,7 +12,7 @@ import java.io.IOException;
 public class ProtocolTestReceive {
     public static void main(String args[])
     {
-        ClientSocket clientSocket = new ClientSocket(7026, new ClientObserver());
+        ClientSocket clientSocket = new ClientSocket(7006, new ClientObserver());
         System.out.println("CLIENT RECEIVE CREATED");
         clientSocket.setListening(true);
 

@@ -45,12 +45,16 @@ public class CongestionWindow {
             while(true)
             {
                 try {
-                    observer.onPacketDropped(delayQueue.take().coolDatagram);
+                    CoolDatagram coolDatagram = delayQueue.take().coolDatagram;
+                    observer.onPacketDropped(coolDatagram);
 
-                    if(currentSize > ConstantDefinitions.MAX_PACKETSIZE)
+                    semaphoreQueue.release(coolDatagram.getLength());
+
+                    if((currentSize / 2) > ConstantDefinitions.MAX_PACKETSIZE)
                     {
-                        semaphoreQueue.acquire(currentSize / 2);
-                        averageRTT += ConstantDefinitions.RTT_DROPPED;
+                        currentSize = currentSize / 2;
+                        semaphoreQueue.acquire(currentSize);
+                        //averageRTT += ConstantDefinitions.RTT_DROPPED;
                     }
 
                 } catch (InterruptedException e) {
@@ -60,9 +64,8 @@ public class CongestionWindow {
 
         }
 
-        protected boolean ackPacket(int sequenceNumber)
+        protected synchronized boolean ackPacket(int sequenceNumber)
         {
-
             System.out.println("HAS THE ACK? : " + sequenceNumber +  queueMap.containsKey(sequenceNumber));
             System.out.println(queueMap.toString());
             DelayedDatagram ackedDatagram = queueMap.get(sequenceNumber);
@@ -97,6 +100,7 @@ public class CongestionWindow {
         {
             if(coolDatagram != null) {
                 try {
+                    System.out.println("SEMAPHORE PERMITS : " + semaphoreQueue.availablePermits());
                     semaphoreQueue.acquire(coolDatagram.getLength());
                 } catch (InterruptedException e) {
                     e.printStackTrace();

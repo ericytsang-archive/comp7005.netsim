@@ -16,7 +16,7 @@ public class ProtocolTestSend
         ClientSocket clientSocket = new ClientSocket(7035, new ClientObserver());
         System.out.println("CLIENT SEND CREATED");
 
-        InetSocketAddress address = new InetSocketAddress("127.0.0.1", 7026);
+        InetSocketAddress address = new InetSocketAddress("127.0.0.1", 7006);
         Connection connection;
         try {
             connection = clientSocket.connect(address);
@@ -28,17 +28,20 @@ public class ProtocolTestSend
         DataOutputStream oustream = new DataOutputStream(connection.getOutputStream());
         int testing_fin = 0;
 
-        while(testing_fin < 10)
+        while(testing_fin < 100000)
         {
             oustream.write(5);
             testing_fin++;
+            System.out.println("TESTING FIN COUNT: " + testing_fin);
 
-            try {
-                Thread.sleep(1000);
+           /* try {
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
+            }*/
+
         }
+        System.out.println("TESTING FIN COUNT DIED: " + testing_fin);
 
         connection.disconnect();
     }

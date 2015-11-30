@@ -311,10 +311,10 @@ public class Connection{
         client.sendingQueue.add(sendDatagram);
     }
 
-    private void sendPacket(DatagramPacket sendDatagram)
+    private synchronized void sendPacket(DatagramPacket sendDatagram)
     {
-        client.sendingQueue.add(sendDatagram);
         CoolDatagram coolDatagram = new CoolDatagram(sendDatagram);
+
         switch (coolDatagram.getPacketType()) {
             case SYN:
                 coolDatagram = new SynDatagram(coolDatagram);
@@ -335,6 +335,7 @@ public class Connection{
         }
 
         congestionWindow.putPacket(coolDatagram);
+        client.sendingQueue.add(sendDatagram);
 
     }
 
@@ -497,7 +498,7 @@ public class Connection{
         @Override
         public void onPacketDropped(CoolDatagram coolDatagram)
         {
-            System.out.println("PACKET DROPPED");
+            System.out.println("PACKET DROPPED: " + coolDatagram.getSeq());
 
             if(coolDatagram.getPacketType() == PacketTypesProtocol.SYN)
             {
