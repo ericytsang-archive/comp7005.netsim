@@ -110,9 +110,9 @@ internal class ForwardingPane:GridPane()
 
                 // if there are no text in any of the text fields, remove it
                 removeAll()
-                forwardingEntries.filter({it.addr1.length == 0
-                    && it.port1.length == 0 && it.addr2.length == 0
-                    && it.port2.length == 0})
+                forwardingEntries.filter({it.addr1.text.isEmpty()
+                    && it.port1.text.isEmpty() && it.addr2.text.isEmpty()
+                    && it.port2.text.isEmpty()})
                     .forEach{forwardingEntries.remove(it)}
                 forwardingEntries.forEach {add(it)}
                 add(ForwardingEntry())
@@ -158,6 +158,9 @@ internal class ForwardingPane:GridPane()
 
         init
         {
+            // reassign instance variables to run their setters
+            error = true
+
             // set on action code
             addr1.textProperty().addListener(InvalidationListener{validateAndNotify()})
             port1.textProperty().addListener(InvalidationListener{validateAndNotify()})
