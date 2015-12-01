@@ -223,9 +223,9 @@ public class Connection{
                     FinDatagram finDatagram = new FinDatagram(coolDatagram);
 
                     connectionLog.addLog("Received FIN SEQ: " + finDatagram.getSeq());
-                    connectionLog.addLog("CURRENT Sent ACK: " + send_ACK);
+                    connectionLog.addLog("CURRENT SEQ: " + current_SEQ);
 
-                    if(finDatagram.getSeq() == send_ACK)
+                    if(finDatagram.getSeq() == current_SEQ)
                     {
                         ControlPacket confirmFin = new ControlPacket(PacketTypesProtocol.ACK);
                         send_ACK += ConstantDefinitions.FIN_SIZE;
