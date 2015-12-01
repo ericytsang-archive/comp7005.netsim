@@ -21,28 +21,16 @@ public class ProtocolTestSend
         try {
             connection = clientSocket.connect(address);
         } catch (ConnectException e) {
-            System.out.println("Received THREAD this:");
             throw e;
         }
 
         DataOutputStream oustream = new DataOutputStream(connection.getOutputStream());
-        int testing_fin = 0;
 
-        byte[] data = new byte[]{5,5,5,5,5,5,5,5,5,5,5,5,5};
-        while(testing_fin < 100000)
+
+        for(int testing_fin = 0; testing_fin < 100000; testing_fin++)
         {
-            oustream.write(data);
-            testing_fin++;
-            System.out.println("TESTING FIN COUNT: " + testing_fin);
-
-           /* try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }*/
-
+            oustream.write(5);
         }
-        System.out.println("TESTING FIN COUNT DIED: " + testing_fin);
 
         connection.disconnect();
     }

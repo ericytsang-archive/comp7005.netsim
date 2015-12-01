@@ -1,5 +1,6 @@
 package ProtocolPeer;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.*;
 import java.util.HashMap;
@@ -46,6 +47,9 @@ public class ClientSocket {
 
         new Thread(this::startSending).start();
         new Thread(this::startReceiving).start();
+
+        new File("./logs").mkdir();
+
     }
 
     public Connection connect(InetSocketAddress address) throws ConnectException
@@ -55,7 +59,7 @@ public class ClientSocket {
 
         if(newConnection.connect())
         {
-             System.out.println("CONNECTION SUCCESSFUL !!");
+             System.out.println("Connection Successful");
              return newConnection;
         }
         else
@@ -71,7 +75,6 @@ public class ClientSocket {
             try {
 
                 mainSocket.send(sendingQueue.take());
-                System.out.println("SENT DATAGRAM");
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -87,7 +90,6 @@ public class ClientSocket {
         {
             try {
                 mainSocket.receive(udpPacket);
-                System.out.println("RECEIVED DATAGRAM");
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -101,7 +103,7 @@ public class ClientSocket {
             else
             {
                 if(listening) {
-                    System.out.println("NEW CONNECTION");
+                    System.out.println("New Connection");
                     final Connection newConnection = new Connection(udpPacket.getSocketAddress(), this);
                     connectionList.put(udpPacket.getSocketAddress(), newConnection);
                     newConnection.enqueue(udpPacket);

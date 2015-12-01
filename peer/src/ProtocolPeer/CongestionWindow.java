@@ -25,10 +25,12 @@ public class CongestionWindow {
         private Map<Integer, DelayedDatagram> queueMap;
         Semaphore semaphoreQueue;
         boolean slowStart;
+        Logger connectionLog;
 
-        CongestionWindow(Observer observer) throws InterruptedException
+        CongestionWindow(Observer observer, Logger connectionLog) throws InterruptedException
         {
             this.observer = observer;
+            this.connectionLog = connectionLog;
 
             semaphoreQueue = new Semaphore(ConstantDefinitions.INITIAL_WINDOW_SIZE, true);
             currentSize = ConstantDefinitions.INITIAL_WINDOW_SIZE;
@@ -54,7 +56,7 @@ public class CongestionWindow {
                     {
                         currentSize = currentSize / 2;
                         semaphoreQueue.acquire(currentSize);
-                        //averageRTT += ConstantDefinitions.RTT_DROPPED;
+                        averageRTT += ConstantDefinitions.RTT_DROPPED;
                     }
 
                 } catch (InterruptedException e) {
@@ -66,7 +68,7 @@ public class CongestionWindow {
 
         protected synchronized boolean ackPacket(int sequenceNumber)
         {
-            System.out.println("HAS THE ACK? : " + sequenceNumber +  queueMap.containsKey(sequenceNumber));
+            connectionLog.addLog("HAS THE ACK? : " + sequenceNumber +  queueMap.containsKey(sequenceNumber));
             DelayedDatagram ackedDatagram = queueMap.get(sequenceNumber);
 
             if(ackedDatagram != null) {
@@ -99,7 +101,7 @@ public class CongestionWindow {
         {
             if(coolDatagram != null) {
                 try {
-                    System.out.println("SEMAPHORE PERMITS : " + semaphoreQueue.availablePermits());
+                    //connectionLog.addLog("CURRENT SEMAPHORE PERMITS : " + semaphoreQueue.availablePermits());
                     semaphoreQueue.acquire(coolDatagram.getLength());
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -108,8 +110,8 @@ public class CongestionWindow {
 
                 DelayedDatagram delayedDatagram = new DelayedDatagram(coolDatagram);
 
-                System.out.println("SEQ NUM: "  + coolDatagram.getSeq());
-                System.out.println("LENGTH: "  + coolDatagram.getLength());
+                //connectionLog.addLog("SEQ NUM: "  + coolDatagram.getSeq());
+                //connectionLog.addLog("LENGTH: "  + coolDatagram.getLength());
                 queueMap.put(coolDatagram.getSeq() + coolDatagram.getLength(), delayedDatagram);
                 delayQueue.add(delayedDatagram);
 

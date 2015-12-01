@@ -2,6 +2,7 @@ package ProtocolPeer;
 
 import java.io.*;
 import java.net.DatagramPacket;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +40,8 @@ public class Connection{
     private CoolPipedInputStream receiveInStream;
     private PipedOutputStream receiveOutStream;
 
+    Logger connectionLog;
+
 
     Connection(SocketAddress address, ClientSocket client)
     {
@@ -53,6 +56,9 @@ public class Connection{
 
         priorityQueue  = new HashMap<>();
 
+        InetSocketAddress inet_addr = (InetSocketAddress) address;
+        connectionLog = new Logger(inet_addr.getHostString(), Integer.toString(inet_addr.getPort()));
+
         connection_established = false;
         connection_active = true;
 
@@ -65,7 +71,7 @@ public class Connection{
         seqNotify = new Object();
 
         try {
-            congestionWindow = new CongestionWindow(new PacketDroppedObserver());
+            congestionWindow = new CongestionWindow(new PacketDroppedObserver(), connectionLog);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -80,6 +86,8 @@ public class Connection{
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        connectionLog.addLog("New Connection to: " + address.toString());
     }
 
     protected boolean enqueue(DatagramPacket packet)
@@ -95,7 +103,7 @@ public class Connection{
                     SynDatagram synDatagram = new SynDatagram(coolDatagram);
                     recv_SEQ = synDatagram.getSeq();
 
-                    System.out.println("RECEIVED SYN: " + recv_SEQ);
+                    connectionLog.addLog("RECEIVED SYN: " + recv_SEQ);
 
                     ControlPacket handshakeResponse = new ControlPacket(PacketTypesProtocol.SYN_ACK);
                     send_SEQ = getRandom();
@@ -103,14 +111,14 @@ public class Connection{
 
                     send_ACK = recv_SEQ + ConstantDefinitions.SYN_SIZE;
 
-                    System.out.println("SENT SYNACK: " + send_SEQ + ", " + send_ACK);
+                    connectionLog.addLog("SENT SYNACK: " + send_SEQ + ", " + send_ACK);
                     send_SEQ = send_SEQ + ConstantDefinitions.SYNACK_SIZE;
                     handshakeResponse.addAcknowledgment(send_ACK);
                     sendPacket(new DatagramPacket(handshakeResponse.getPacket(), handshakeResponse.getPacket().length, address));
 
                     current_SEQ = send_ACK;
                     connection_established = true;
-                    System.out.println("CONNECTION SUCCESSFULLY RECEIVED !!");
+                    connectionLog.addLog("Connection Successfully Established !!");
 
                 }
 
@@ -119,6 +127,7 @@ public class Connection{
             case ACK:
 
                 AckDatagram ackDatagram = new AckDatagram(coolDatagram);
+                //connectionLog.addLog("RECEIVED ACK: " + ackDatagram.getAck());
                 congestionWindow.ackPacket(ackDatagram.getAck());
 
                 if(response_fin)
@@ -128,6 +137,8 @@ public class Connection{
                     {
                         connection_established = false;
                         connection_active = false;
+                        connectionLog.addLog("CONNECTION DISCONNECTED");
+                        connectionLog.close();
 
                         try {
 
@@ -141,7 +152,7 @@ public class Connection{
                         }
 
                         client.disconnect(this);
-                        System.out.println("CONNECTION DISCONNECTED");
+
 
 
                     }
@@ -157,8 +168,8 @@ public class Connection{
                     recv_SEQ = dataDatagram.getSeq();
                     send_ACK = recv_SEQ + dataDatagram.getLength();
 
-                    System.out.println("Received SEQ: " + recv_SEQ);
-                    System.out.println("Sent ACK: " + send_ACK);
+                    connectionLog.addLog("Received SEQ: " + recv_SEQ);
+                    connectionLog.addLog("Sent ACK: " + send_ACK);
 
                    /* StringBuffer sb = new StringBuffer();
                     for( byte b : dataDatagram.getData().array() )
@@ -182,7 +193,7 @@ public class Connection{
                 {
                     recv_SEQ = synackDatagram.getSeq();
 
-                    System.out.println("RECEIVED SYNACK: " + recv_SEQ + ", " + synackDatagram.getAck());
+                    connectionLog.addLog("RECEIVED SYNACK: " + recv_SEQ + ", " + synackDatagram.getAck());
 
                     congestionWindow.ackPacket(synackDatagram.getAck());
 
@@ -191,7 +202,7 @@ public class Connection{
                     handshakeFinal.addAcknowledgment(send_ACK);
                     sendAcknowledgment(new DatagramPacket(handshakeFinal.getPacket(), handshakeFinal.getPacket().length, address));
 
-                    System.out.println("SENT ACK: " + send_ACK);
+                    connectionLog.addLog("SENT ACK: " + send_ACK);
 
                     current_SEQ = send_ACK;
                     connection_established = true;
@@ -211,8 +222,8 @@ public class Connection{
                 {
                     FinDatagram finDatagram = new FinDatagram(coolDatagram);
 
-                    System.out.println("Received FIN SEQ: " + finDatagram.getSeq());
-                    System.out.println("CURRENT Sent ACK: " + send_ACK);
+                    connectionLog.addLog("Received FIN SEQ: " + finDatagram.getSeq());
+                    connectionLog.addLog("CURRENT Sent ACK: " + send_ACK);
 
                     if(finDatagram.getSeq() == send_ACK)
                     {
@@ -226,6 +237,9 @@ public class Connection{
                             connection_established = false;
                             connection_active = false;
 
+                            connectionLog.addLog("CONNECTION DISCONNECTED");
+                            connectionLog.close();
+
                             try {
 
                                 sendInStream.close();
@@ -238,7 +252,7 @@ public class Connection{
                             }
 
                             client.disconnect(this);
-                            System.out.println("CONNECTION DISCONNECTED");
+
                         }
 
                         if(!started_fin)
@@ -254,8 +268,8 @@ public class Connection{
                     }
                 }
                 break;
-            case UNKNOWN:
-                System.out.println("what is going on");
+            default:
+                connectionLog.addLog("Unknown Packet Type Received");
                 break;
         }
 
@@ -270,7 +284,7 @@ public class Connection{
         sendPacket(new DatagramPacket(starFin.getPacket(), starFin.getPacket().length, address));
 
         started_fin = true;
-        System.out.println("SENT DC REQUEST");
+        connectionLog.addLog("SENT DISCONNECT REQUEST");
     }
 
     protected boolean connect()
@@ -466,11 +480,9 @@ public class Connection{
                     dataPacket.addSequence(send_SEQ);
                     dataPacket.addData(barr, read);
 
-                    System.out.println(dataPacket.getPacket().toString());
-
                     sendPacket(new DatagramPacket(dataPacket.getPacket(), dataPacket.getPacket().length, address));
 
-                    System.out.println("SEND SEQ: " + send_SEQ);
+                    connectionLog.addLog("SEND PACKET SEQ: " + send_SEQ);
 
                     send_SEQ = send_SEQ + read + ConstantDefinitions.DATA_OVERHEAD;
 
@@ -491,7 +503,7 @@ public class Connection{
 
                 sendPacket(new DatagramPacket(dataPacket.getPacket(), dataPacket.getPacket().length, address));
 
-                System.out.println("SEND SEQ: " + send_SEQ);
+                connectionLog.addLog("SEND PACKET SEQ: " + send_SEQ);
 
                 send_SEQ = send_SEQ + read + ConstantDefinitions.DATA_OVERHEAD;
             }
@@ -503,11 +515,12 @@ public class Connection{
         @Override
         public void onPacketDropped(CoolDatagram coolDatagram)
         {
-            System.out.println("PACKET DROPPED: " + coolDatagram.getSeq());
+            connectionLog.addLog("PACKET DROPPED: " + coolDatagram.getSeq());
 
             if(coolDatagram.getPacketType() == PacketTypesProtocol.SYN)
             {
                 connection_established = false;
+                connectionLog.addLog("SYN TIMEOUT, CONNECTION FAILED");
                 synchronized (synNotify) {
                     synNotify.notify();
                 }

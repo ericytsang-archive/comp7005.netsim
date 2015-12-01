@@ -25,5 +25,5 @@ public class ConstantDefinitions {
 
     public static final int INITIAL_TIMEOUT = 10000;
     public static final long RTT_OVERHEAD = 50;
-    public static final int RTT_DROPPED = 2;
+    public static final int RTT_DROPPED = 20;
 }
