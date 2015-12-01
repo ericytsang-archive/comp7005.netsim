@@ -16,7 +16,7 @@ public class ProtocolTestSend
         ClientSocket clientSocket = new ClientSocket(7035, new ClientObserver());
         System.out.println("CLIENT SEND CREATED");
 
-        InetSocketAddress address = new InetSocketAddress("127.0.0.1", 7006);
+        InetSocketAddress address = new InetSocketAddress("192.168.0.12", 9600);
         Connection connection;
         try {
             connection = clientSocket.connect(address);
@@ -25,11 +25,19 @@ public class ProtocolTestSend
         }
 
         DataOutputStream oustream = new DataOutputStream(connection.getOutputStream());
+        byte[] dataToSend = new byte[] {0,1,2,3,4,5,6,7,8,9};
 
 
-        for(int testing_fin = 0; testing_fin < 100000; testing_fin++)
+        for(int testing_fin = 0; testing_fin < 150000; testing_fin++)
         {
-            oustream.write(5);
+            oustream.write(dataToSend);
+            System.out.println("TESITNG NUMBER: " + testing_fin);
+
+            try {
+                Thread.sleep(0,1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         connection.disconnect();

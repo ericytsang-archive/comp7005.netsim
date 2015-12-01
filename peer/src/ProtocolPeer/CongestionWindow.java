@@ -27,6 +27,12 @@ public class CongestionWindow {
         boolean slowStart;
         Logger connectionLog;
 
+        private boolean stopSending;
+        private Object sendingNotify;
+        private int sem_count;
+
+        private Object cutHalf;
+
         CongestionWindow(Observer observer, Logger connectionLog) throws InterruptedException
         {
             this.observer = observer;
@@ -39,25 +45,64 @@ public class CongestionWindow {
             delayQueue = new DelayQueue<>();
             queueMap = new HashMap<>();
 
+            sendingNotify = new Object();
+            cutHalf = new Object();
+
+            stopSending = false;
+            sem_count = 0;
+
             new Thread(this::timeoutThread).start();
+            new Thread(this::cutSemaphoreThread).start();
         }
 
+        private void cutSemaphoreThread()
+        {
+            while(true)
+            {
+                synchronized (cutHalf) {
+                    try {
+                        cutHalf.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if((currentSize / 2) > ConstantDefinitions.MAX_PACKETSIZE)
+                {
+                    currentSize = currentSize / 2;
+                    try {
+                        semaphoreQueue.acquire(currentSize);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    averageRTT += ConstantDefinitions.RTT_DROPPED;
+                }
+
+                //connectionLog.addLog("CURRENT SEMAPHORE SIZE: " + currentSize);
+                stopSending = false;
+
+                synchronized (sendingNotify)
+                {
+                    sendingNotify.notify();
+                }
+            }
+        }
         private void timeoutThread()
         {
             while(true)
             {
                 try {
                     CoolDatagram coolDatagram = delayQueue.take().coolDatagram;
-                    observer.onPacketDropped(coolDatagram);
-
                     semaphoreQueue.release(coolDatagram.getLength());
 
-                    if((currentSize / 2) > ConstantDefinitions.MAX_PACKETSIZE)
+                    observer.onPacketDropped(coolDatagram);
+
+                    synchronized (cutHalf)
                     {
-                        currentSize = currentSize / 2;
-                        semaphoreQueue.acquire(currentSize);
-                        averageRTT += ConstantDefinitions.RTT_DROPPED;
+                        cutHalf.notify();
                     }
+
+                    stopSending = true;
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -66,13 +111,16 @@ public class CongestionWindow {
 
         }
 
-        protected synchronized boolean ackPacket(int sequenceNumber)
+        protected boolean ackPacket(int sequenceNumber)
         {
             connectionLog.addLog("HAS THE ACK? : " + sequenceNumber +  queueMap.containsKey(sequenceNumber));
             DelayedDatagram ackedDatagram = queueMap.get(sequenceNumber);
 
             if(ackedDatagram != null) {
-                delayQueue.remove(ackedDatagram);
+                if(delayQueue.contains(ackedDatagram))
+                {
+                    delayQueue.remove(ackedDatagram);
+                }
                 queueMap.remove(sequenceNumber, ackedDatagram);
 
                 if (slowStart) {
@@ -97,16 +145,49 @@ public class CongestionWindow {
 
         }
 
-        protected synchronized boolean putPacket(CoolDatagram coolDatagram)
+        protected boolean putPacket(CoolDatagram coolDatagram)
+        {
+            if(stopSending)
+            {
+                synchronized (sendingNotify)
+                {
+                    try {
+                        sendingNotify.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            if(coolDatagram != null) {
+                synchronized (semaphoreQueue) {
+                    try {
+                        //connectionLog.addLog("CURRENT SEMAPHORE PERMITS : " + semaphoreQueue.availablePermits());
+                        semaphoreQueue.acquire(coolDatagram.getLength());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+                DelayedDatagram delayedDatagram = new DelayedDatagram(coolDatagram);
+
+                //connectionLog.addLog("SEQ NUM: "  + coolDatagram.getSeq());
+                //connectionLog.addLog("LENGTH: "  + coolDatagram.getLength());
+                queueMap.put(coolDatagram.getSeq() + coolDatagram.getLength(), delayedDatagram);
+                delayQueue.add(delayedDatagram);
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+        protected boolean putTimeoutPacket(CoolDatagram coolDatagram)
         {
             if(coolDatagram != null) {
-                try {
-                    //connectionLog.addLog("CURRENT SEMAPHORE PERMITS : " + semaphoreQueue.availablePermits());
-                    semaphoreQueue.acquire(coolDatagram.getLength());
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
 
                 DelayedDatagram delayedDatagram = new DelayedDatagram(coolDatagram);
 
@@ -134,6 +215,7 @@ public class CongestionWindow {
             {
                this.coolDatagram = coolDatagram;
                enqueueTime = System.currentTimeMillis();
+                //connectionLog.addLog("AVERAGE RTT: " + averageRTT);
             }
 
             @Override

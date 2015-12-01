@@ -353,6 +353,34 @@ public class Connection{
 
     }
 
+    private void sendTimeoutPacket(DatagramPacket sendDatagram)
+    {
+        CoolDatagram coolDatagram = new CoolDatagram(sendDatagram);
+
+        switch (coolDatagram.getPacketType()) {
+            case SYN:
+                coolDatagram = new SynDatagram(coolDatagram);
+                break;
+            case DATA:
+                coolDatagram = new DataDatagram(coolDatagram);
+                break;
+            case SYN_ACK:
+                coolDatagram = new SynAckDatagram(coolDatagram);
+                break;
+            case FIN:
+                coolDatagram = new FinDatagram(coolDatagram);
+                break;
+            default:
+                coolDatagram = null;
+                System.err.println("unknown Packet Type");
+                break;
+        }
+
+        congestionWindow.putTimeoutPacket(coolDatagram);
+        client.sendingQueue.add(sendDatagram);
+
+    }
+
     public InputStream getInputStream()
     {
         return receiveInStream;
@@ -499,7 +527,7 @@ public class Connection{
                 dataPacket.addSequence(send_SEQ);
                 dataPacket.addData(barr, read);
 
-                System.out.println(dataPacket.getPacket().toString());
+                //System.out.println(dataPacket.getPacket().toString());
 
                 sendPacket(new DatagramPacket(dataPacket.getPacket(), dataPacket.getPacket().length, address));
 
@@ -527,7 +555,7 @@ public class Connection{
             }
             else
             {
-                sendPacket(coolDatagram.getUdpPacket());
+                sendTimeoutPacket(coolDatagram.getUdpPacket());
             }
         }
     }
