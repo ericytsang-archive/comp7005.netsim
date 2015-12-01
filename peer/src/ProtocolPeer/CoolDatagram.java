@@ -5,6 +5,10 @@ import java.nio.ByteBuffer;
 
 /**
  * Created by Manuel on 2015-11-25.
+ *
+ * This class will wrap a UDPDatagram and will get its payload in order
+ * to get the type of datagram it is, it will also calculate the length
+ * and then work it based on its type.
  */
 public class CoolDatagram {
 

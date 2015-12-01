@@ -2,6 +2,8 @@ package ProtocolPeer;
 
 /**
  * Created by Manuel on 2015-11-11.
+ *
+ * Class holding all constant definitions
  */
 public class ConstantDefinitions {
 

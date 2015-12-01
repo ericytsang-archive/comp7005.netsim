@@ -4,6 +4,8 @@ import java.nio.ByteBuffer;
 
 /**
  * Created by Manuel on 2015-11-25.
+ *
+ *  * Class used for DataDatagrams will get the seq and data from coolDatagrams.
  */
 public class DataDatagram extends CoolDatagram {
 

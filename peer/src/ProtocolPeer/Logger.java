@@ -10,6 +10,8 @@ import java.util.Date;
 
 /**
  * Created by Manuel on 2015-11-30.
+ *
+ * Class used to log events into a folder holding connection information
  */
 public class Logger
 {

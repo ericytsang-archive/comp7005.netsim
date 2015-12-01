@@ -9,6 +9,8 @@ import java.net.InetSocketAddress;
 
 /**
  * Created by Manuel on 2015-11-28.
+ *
+ * Test Send
  */
 public class ProtocolTestSend
 {

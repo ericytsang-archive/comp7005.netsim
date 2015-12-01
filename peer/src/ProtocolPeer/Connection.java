@@ -9,6 +9,12 @@ import java.util.Map;
 
 /**
  * Created by Manuel on 2015-11-12.
+ * Designed by : Eric Tsang and Manuel Gonzales
+ * Implemented by: Manuel Gonzales
+ *
+ * Class that handles a single connection. It is in cahrge of multiplexing based on packet
+ * types, send data, retransmit datagrams, deal with the streams for sending and receiving and
+ * establish/break connection
  */
 public class Connection{
 
@@ -43,6 +49,11 @@ public class Connection{
     Logger connectionLog;
 
 
+    /**
+     * instantiates all objects needed to eeep track of the conneciton such as qeuues logs and streams
+     * @param address
+     * @param client
+     */
     Connection(SocketAddress address, ClientSocket client)
     {
         send_ACK = 0;
@@ -90,6 +101,11 @@ public class Connection{
         connectionLog.addLog("New Connection to: " + address.toString());
     }
 
+    /**
+     * will multiplex based on the type pof received datagram and will ack based on the type
+     * @param packet
+     * @return
+     */
     protected boolean enqueue(DatagramPacket packet)
     {
         CoolDatagram coolDatagram = new CoolDatagram(packet);
@@ -276,6 +292,9 @@ public class Connection{
         return false;
     }
 
+    /**
+     * used to discnonect must be called by the user it will send a fin to start an end of trasnmission
+     */
     public void disconnect()
     {
         ControlPacket starFin = new ControlPacket(PacketTypesProtocol.FIN);
@@ -287,6 +306,9 @@ public class Connection{
         connectionLog.addLog("SENT DISCONNECT REQUEST");
     }
 
+    /**
+     * used to connect must be called by the user it will send a syn to start an beginning of trasnmission
+     */
     protected boolean connect()
     {
         ControlPacket handshakeStart = new ControlPacket(PacketTypesProtocol.SYN);
@@ -315,16 +337,28 @@ public class Connection{
         }
     }
 
+    /**
+     * random seq number
+     * @return
+     */
     private int getRandom()
     {
         return (int) ((Math.random() * Integer.MAX_VALUE) / ConstantDefinitions.RANDOM_FACTOR);
     }
 
+    /**
+     * send the datagram straight to the socket
+     * @param sendDatagram
+     */
     private void sendAcknowledgment(DatagramPacket sendDatagram)
     {
         client.sendingQueue.add(sendDatagram);
     }
 
+    /**
+     * will add datagram to congestion window and send it to the socket
+     * @param sendDatagram
+     */
     private synchronized void sendPacket(DatagramPacket sendDatagram)
     {
         CoolDatagram coolDatagram = new CoolDatagram(sendDatagram);
@@ -353,6 +387,10 @@ public class Connection{
 
     }
 
+    /**
+     * will add retransmitted datagram to congestion window and send it to the socket
+     * @param sendDatagram
+     */
     private void sendTimeoutPacket(DatagramPacket sendDatagram)
     {
         CoolDatagram coolDatagram = new CoolDatagram(sendDatagram);
@@ -381,25 +419,45 @@ public class Connection{
 
     }
 
+    /**
+     *
+     * @return input stream for reading data
+     */
     public InputStream getInputStream()
     {
         return receiveInStream;
     }
 
+    /**
+     *
+     * @return output stream for sending/writing data
+     */
     public OutputStream getOutputStream()
     {
         return sendOutStream;
     }
 
+    /**
+     * returns connetion address
+     * @return
+     */
     protected SocketAddress getSocketAddress()
     {
         return address;
     }
 
+    /**
+     *
+     * @return active
+     */
     public boolean isActive()
     {
         return connection_active;
     }
+
+    /**
+     * wrapper class used so that the output streams send the data after writing
+     */
     public class CoolPipedInputStream extends PipedInputStream
     {
         CoolPipedInputStream(PipedOutputStream out, int size) throws IOException {
@@ -464,6 +522,9 @@ public class Connection{
         }
     }
 
+    /**
+     * wrapper class used so that the input stream adds data to outputstream before reading
+     */
     public class CoolPipedOutputStream extends PipedOutputStream
     {
         CoolPipedOutputStream()
@@ -538,6 +599,9 @@ public class Connection{
         }
     }
 
+    /**
+     * obseerver to act absed on dropped packets
+     */
     protected class PacketDroppedObserver implements CongestionWindow.Observer
     {
         @Override

@@ -8,6 +8,8 @@ import java.io.IOException;
 
 /**
  * Created by Manuel on 2015-11-28.
+ *
+ * Test Receive
  */
 public class ProtocolTestReceive {
     public static void main(String args[])

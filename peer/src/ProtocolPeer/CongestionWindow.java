@@ -9,6 +9,13 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Manuel on 2015-11-26.
+ * Designed by : Eric Tsang and Manuel Gonzales
+ * Implemented by: Manuel Gonzales
+ *
+ * This class resembles a connection window it will add packets to its queue and will time
+ * out if an ack is not received on time it will also handle increasing rtts and will shorten
+ * window sizes if packets are dropped
+ *
  */
 public class CongestionWindow {
 
@@ -33,6 +40,13 @@ public class CongestionWindow {
 
         private Object cutHalf;
 
+    /**
+     * starts the queues and semaphores and more which are used to keep track of the window it also
+     * starts the timeout thread as well as the congestion window resize thread
+     * @param observer
+     * @param connectionLog
+     * @throws InterruptedException
+     */
         CongestionWindow(Observer observer, Logger connectionLog) throws InterruptedException
         {
             this.observer = observer;
@@ -55,7 +69,12 @@ public class CongestionWindow {
             new Thread(this::cutSemaphoreThread).start();
         }
 
-        private void cutSemaphoreThread()
+    /**
+     * will get notified when the window needs to be cut due to dropped packets
+     * it will not cut it off if the window is getting closer to the MAX SIZE for a
+     * DATAGRAM
+     */
+    private void cutSemaphoreThread()
         {
             while(true)
             {
@@ -87,7 +106,12 @@ public class CongestionWindow {
                 }
             }
         }
-        private void timeoutThread()
+
+    /**
+     * This thread will take timeout packets out of the delayed queue and will retransmit them as well
+     * as notifying the resizing window thread
+     */
+    private void timeoutThread()
         {
             while(true)
             {
@@ -111,6 +135,12 @@ public class CongestionWindow {
 
         }
 
+    /**
+     * whenever a packet is acked it is remoed from the delayed queue so that it is not
+     * time out. it icnreases iwndow size and rtt based on how the transmission went
+     * @param sequenceNumber
+     * @return
+     */
         protected boolean ackPacket(int sequenceNumber)
         {
             connectionLog.addLog("HAS THE ACK? : " + sequenceNumber +  queueMap.containsKey(sequenceNumber));
@@ -145,6 +175,12 @@ public class CongestionWindow {
 
         }
 
+    /**
+     * when a datagram is gonna be sent it gets added to the delayed queue in order to
+     * keep track of the timeout
+     * @param coolDatagram
+     * @return
+     */
         protected boolean putPacket(CoolDatagram coolDatagram)
         {
             if(stopSending)
@@ -185,6 +221,11 @@ public class CongestionWindow {
 
         }
 
+    /**
+     * Only used for retransmitting packets it will put them back into the delayed queue.
+     * @param coolDatagram
+     * @return
+     */
         protected boolean putTimeoutPacket(CoolDatagram coolDatagram)
         {
             if(coolDatagram != null) {
@@ -205,6 +246,9 @@ public class CongestionWindow {
 
         }
 
+    /**
+     * wrapper class used in order to add delay(timeout) to the datagrams
+     */
         protected class DelayedDatagram implements Delayed
         {
 

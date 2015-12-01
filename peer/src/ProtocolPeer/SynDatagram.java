@@ -2,6 +2,7 @@ package ProtocolPeer;
 
 /**
  * Created by Manuel on 2015-11-25.
+ * Class used for SynDatagrams will get the SEQ from coolDatagrams.
  */
 public class SynDatagram extends CoolDatagram {
 
