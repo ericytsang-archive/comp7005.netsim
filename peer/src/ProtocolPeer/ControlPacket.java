@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 
 /**
  * Created by Manuel on 2015-11-11.
+ * Class used to separate control packet/datagrams from data packet/datagrams
  */
 public class ControlPacket extends Packet {
 

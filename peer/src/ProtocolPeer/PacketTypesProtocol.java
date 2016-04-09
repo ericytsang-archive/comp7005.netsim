@@ -3,6 +3,10 @@ package ProtocolPeer;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author Manuel
+ * Enum holding types of datagrams
+ */
 public enum PacketTypesProtocol
 {
     SYN(2),

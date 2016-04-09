@@ -4,6 +4,9 @@ import java.nio.ByteBuffer;
 
 /**
  * Created by Manuel on 2015-11-11.
+ *
+ * This class willl create a Packet or Datagram, and will set it up with all the right
+ * flags such as ACK/SEQ and add DATA before wrappingit into a UDP Datagram for sending
  */
 public class Packet {
 

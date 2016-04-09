@@ -2,6 +2,8 @@ package ProtocolPeer;
 
 /**
  * Created by Manuel on 2015-11-25.
+ *
+ * Class used for FinDatagrams will get the seq from coolDatagrams.
  */
 public class FinDatagram extends CoolDatagram {
 

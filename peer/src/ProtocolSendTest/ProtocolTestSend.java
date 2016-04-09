@@ -9,6 +9,8 @@ import java.net.InetSocketAddress;
 
 /**
  * Created by Manuel on 2015-11-28.
+ *
+ * Test Send
  */
 public class ProtocolTestSend
 {
@@ -16,32 +18,29 @@ public class ProtocolTestSend
         ClientSocket clientSocket = new ClientSocket(7035, new ClientObserver());
         System.out.println("CLIENT SEND CREATED");
 
-        InetSocketAddress address = new InetSocketAddress("127.0.0.1", 7006);
+        InetSocketAddress address = new InetSocketAddress("192.168.0.12", 9600);
         Connection connection;
         try {
             connection = clientSocket.connect(address);
         } catch (ConnectException e) {
-            System.out.println("Received THREAD this:");
             throw e;
         }
 
         DataOutputStream oustream = new DataOutputStream(connection.getOutputStream());
-        int testing_fin = 0;
+        byte[] dataToSend = new byte[] {0,1,2,3,4,5,6,7,8,9};
 
-        while(testing_fin < 100000)
+
+        for(int testing_fin = 0; testing_fin < 150000; testing_fin++)
         {
-            oustream.write(5);
-            testing_fin++;
-            System.out.println("TESTING FIN COUNT: " + testing_fin);
+            oustream.write(dataToSend);
+            System.out.println("TESITNG NUMBER: " + testing_fin);
 
-           /* try {
-                Thread.sleep(100);
+            try {
+                Thread.sleep(0,1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }*/
-
+            }
         }
-        System.out.println("TESTING FIN COUNT DIED: " + testing_fin);
 
         connection.disconnect();
     }
