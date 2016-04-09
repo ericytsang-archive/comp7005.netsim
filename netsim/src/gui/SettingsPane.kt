@@ -43,12 +43,12 @@ internal class SettingsPane:GridPane()
     private val NOISE_DEFAULT = 0.01
 
     private val LATENCY_LABEL = "Latency:"
-    private val LATENCY_MAX = 5000.0
+    private val LATENCY_MAX = 500.0
     private val LATENCY_MIN = 0.0
     private val LATENCY_DEFAULT = 250.0
 
     private val JITTER_LABEL = "Jitter:"
-    private val JITTER_MAX = 5000.0
+    private val JITTER_MAX = 250.0
     private val JITTER_MIN = 0.0
     private val JITTER_DEFAULT = 250.0
 

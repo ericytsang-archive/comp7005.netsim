@@ -124,10 +124,10 @@ internal class StatisticsPane:GridPane()
         bytesInFlightDisplay.label.text = BYTES_IN_FLIGHT_LABEL
         networkUsageDisplay.label.text = NETWORK_USAGE_LABEL
         packetDropRateDisplay.label.text = PACKET_DROP_RATE_LABEL
-        networkUsageChartDispay.minWidth = 250.0
-        networkUsageChartDispay.minHeight = 250.0
-        networkUsageChartDispay.prefWidth = 250.0
-        networkUsageChartDispay.prefHeight = 250.0
+        networkUsageChartDispay.minWidth = 300.0
+        networkUsageChartDispay.minHeight = 300.0
+        networkUsageChartDispay.prefWidth = 300.0
+        networkUsageChartDispay.prefHeight = 300.0
         networkUsageChartDispay.animated = false
         networkUsageChartDispay.labelsVisible = true
 
